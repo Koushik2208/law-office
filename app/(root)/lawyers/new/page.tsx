@@ -1,7 +1,7 @@
 import React from "react";
 
 const NewLawyer = () => {
-  return <div>NewLawyer</div>;
+  return <div>New Lawyer</div>;
 };
 
 export default NewLawyer;
