@@ -48,7 +48,7 @@ const CasesPage = async ({ searchParams }: SearchParams) => {
           Add Case
         </button>
       </div>
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-6 max-md:flex-col">
         <LawyerFilter />
         <CourtFilter />
         <DateFilter />

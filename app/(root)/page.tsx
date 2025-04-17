@@ -16,7 +16,7 @@ async function StatsCards() {
   const stats = await getDashboardStats();
   
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Cases</CardTitle>
@@ -48,7 +48,7 @@ async function RecentCases() {
   const cases = await getRecentCases();
   
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-1 md:col-span-2 lg:col-span-4">
       <CardHeader>
         <CardTitle>Recent Cases</CardTitle>
       </CardHeader>
@@ -85,7 +85,7 @@ async function UpcomingHearings() {
   const hearings = await getUpcomingHearings();
   
   return (
-    <Card className="col-span-3">
+    <Card className="col-span-1 md:col-span-2 lg:col-span-3">
       <CardHeader>
         <CardTitle>Upcoming Hearings</CardTitle>
       </CardHeader>
@@ -169,7 +169,7 @@ async function HearingsByMonth() {
 // Loading Skeleton Components
 function StatsCardsSkeleton() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
       {[...Array(2)].map((_, i) => (
         <Card key={i}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -215,7 +215,7 @@ const Home = () => {
         <StatsCards />
       </Suspense>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
         <Suspense fallback={<ListSkeleton />}>
           <RecentCases />
         </Suspense>
@@ -225,7 +225,7 @@ const Home = () => {
         </Suspense>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Suspense fallback={<ListSkeleton />}>
           <CaseStatusDistribution />
         </Suspense>

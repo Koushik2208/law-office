@@ -1,56 +1,94 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { formUrlQuery, removeKeysFromUrlQuery } from "@/lib/url"
 
 export default function DateFilter() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const startDate = searchParams.get('startDate')
+  const endDate = searchParams.get('endDate')
 
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (value) {
-        params.set(name, value)
-      } else {
-        params.delete(name)
-      }
-      return params.toString()
-    },
-    [searchParams]
-  )
-
-  const handleDateChange = (type: 'start' | 'end', value: string) => {
+  const handleDateChange = (type: 'start' | 'end', date: Date | undefined) => {
     const paramName = type === 'start' ? 'startDate' : 'endDate'
-    router.push(`?${createQueryString(paramName, value)}`)
+    
+    if (date) {
+      const formattedDate = format(date, 'yyyy-MM-dd')
+      const newUrl = formUrlQuery({
+        params: searchParams.toString(),
+        key: paramName,
+        value: formattedDate
+      })
+      router.push(newUrl)
+    } else {
+      const newUrl = removeKeysFromUrlQuery({
+        params: searchParams.toString(),
+        keysToRemove: [paramName]
+      })
+      router.push(newUrl)
+    }
   }
 
   return (
-    <div className="flex gap-4 mb-4">
-      <div>
-        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="flex gap-4 max-md:flex-col">
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-muted-foreground">
           Start Date
         </label>
-        <input
-          type="date"
-          id="startDate"
-          className="border rounded-md px-3 py-2"
-          value={searchParams.get('startDate') || ''}
-          onChange={(e) => handleDateChange('start', e.target.value)}
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={`w-[240px] max-md:w-full justify-start text-left font-normal ${
+                !startDate && "text-muted-foreground"
+              }`}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {startDate ? format(new Date(startDate), "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={startDate ? new Date(startDate) : undefined}
+              onSelect={(date) => handleDateChange('start', date)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
-      <div>
-        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-muted-foreground">
           End Date
         </label>
-        <input
-          type="date"
-          id="endDate"
-          className="border rounded-md px-3 py-2"
-          value={searchParams.get('endDate') || ''}
-          onChange={(e) => handleDateChange('end', e.target.value)}
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={`w-[240px] max-md:w-full justify-start text-left font-normal ${
+                !endDate && "text-muted-foreground"
+              }`}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {endDate ? format(new Date(endDate), "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={endDate ? new Date(endDate) : undefined}
+              onSelect={(date) => handleDateChange('end', date)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   )
-} 
+}

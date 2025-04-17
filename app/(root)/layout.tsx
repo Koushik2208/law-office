@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "../globals.css";
 import Sidebar from '@/components/Sidebar'
+import { ThemeProvider } from "@/components/theme-provider";
+import { ModeToggle } from "@/components/mode-toggle";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const poppins = localFont({
+  src: '../fonts/Poppins-Regular.ttf',
+  variable: "--font-poppins",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -24,14 +22,26 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 p-4 md:p-8">
-            {children}
-          </main>
-        </div>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${poppins.variable} ${poppins.className} antialiased bg-gray-50/50`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="flex min-h-screen w-full overflow-hidden">
+            <Sidebar />
+            <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+              <div className="max-w-[1400px] mx-auto w-full">
+                <div className="fixed top-4 right-4 max-md:hidden">
+                  <ModeToggle />
+                </div>
+                {children}
+              </div>
+            </main>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )

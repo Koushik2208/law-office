@@ -1,8 +1,16 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getCourts } from '@/lib/actions/court.actions'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { formUrlQuery, removeKeysFromUrlQuery } from "@/lib/url"
 
 interface Court {
   _id: string
@@ -30,45 +38,45 @@ export default function CourtFilter() {
     fetchCourts()
   }, [])
 
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (value) {
-        params.set(name, value)
-      } else {
-        params.delete(name)
-      }
-      return params.toString()
-    },
-    [searchParams]
-  )
-
   const handleCourtChange = (value: string) => {
-    router.push(`?${createQueryString('courtId', value)}`)
+    if (value === 'all') {
+      const newUrl = removeKeysFromUrlQuery({
+        params: searchParams.toString(),
+        keysToRemove: ['courtId']
+      })
+      router.push(newUrl)
+    } else {
+      const newUrl = formUrlQuery({
+        params: searchParams.toString(),
+        key: 'courtId',
+        value
+      })
+      router.push(newUrl)
+    }
   }
 
   if (isLoading) {
-    return <div className="animate-pulse h-10 bg-gray-200 rounded-md w-48"></div>
+    return <div className="animate-pulse h-10 bg-gray-200 rounded-md w-full max-w-[240px] max-md:max-w-full"></div>
   }
 
   return (
-    <div>
-      <label htmlFor="court" className="block text-sm font-medium text-gray-700 mb-1">
-        Filter by Court
-      </label>
-      <select
-        id="court"
-        className="border rounded-md px-3 py-2 w-48"
-        value={searchParams.get('courtId') || ''}
-        onChange={(e) => handleCourtChange(e.target.value)}
+    <div className="w-full max-w-[240px] max-md:max-w-full">
+      <Select
+        value={searchParams.get('courtId') || 'all'}
+        onValueChange={handleCourtChange}
       >
-        <option value="">All Courts</option>
-        {courts.map((court) => (
-          <option key={court._id} value={court._id}>
-            {court.name} ({court.location})
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select court" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Courts</SelectItem>
+          {courts.map((court) => (
+            <SelectItem key={court._id} value={court._id}>
+              {court.name} ({court.location})
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 } 

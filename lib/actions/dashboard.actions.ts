@@ -5,6 +5,8 @@ import Case from "@/database/case.model";
 import Hearing from "@/database/hearing.model";
 import logger from "@/lib/logger";
 
+import { format } from "date-fns";
+
 // Get basic statistics for the cards
 export async function getDashboardStats() {
   try {
@@ -19,7 +21,7 @@ export async function getDashboardStats() {
             total: { $sum: 1 },
             active: {
               $sum: {
-                $cond: [{ $eq: ["$status", "active"] }, 1, 0]
+                $cond: [{ $eq: ["$status", "pending"] }, 1, 0]
               }
             }
           }
@@ -32,7 +34,7 @@ export async function getDashboardStats() {
             total: { $sum: 1 },
             upcoming: {
               $sum: {
-                $cond: [{ $gte: ["$date", new Date()] }, 1, 0]
+                $cond: [{ $gte: ["$date", format(new Date(), "dd-MM-yyyy")] }, 1, 0]
               }
             }
           }
@@ -77,7 +79,7 @@ export async function getUpcomingHearings() {
     await dbConnect();
     logger.info("Fetching upcoming hearings");
 
-    const hearings = await Hearing.find({ date: { $gte: new Date() } })
+    const hearings = await Hearing.find({ date: { $gte: format(new Date(), "dd-MM-yyyy") } })
       .sort({ date: 1 })
       .limit(5)
       .populate("caseId", "title caseNumber");
