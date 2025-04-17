@@ -1,58 +1,72 @@
 // app/api/hearings/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-
-interface Hearing {
-  id: number;
-  caseId: number;
-  date: string;
-  description: string;
-}
-
-const hearings: Hearing[] = [
-  { id: 301, caseId: 1, date: "2024-05-10", description: "Initial hearing" },
-  {
-    id: 302,
-    caseId: 2,
-    date: "2024-05-15",
-    description: "Document submission",
-  },
-  {
-    id: 303,
-    caseId: 1,
-    date: "2024-05-22",
-    description: "Witness examination",
-  },
-];
+import dbConnect from "@/lib/mongoose";
+import Hearing from "@/database/hearing.model";
+import Case from "@/database/case.model";
+import { Types } from "mongoose";
 
 export async function GET() {
-  return NextResponse.json(hearings);
+  try {
+    await dbConnect();
+    const hearings = await Hearing.find()
+      .populate("caseId", "title caseNumber clientName");
+    return NextResponse.json(hearings);
+  } catch (error) {
+    console.error("Error fetching hearings:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch hearings" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
     const reqBody = await request.json();
-
-    // Expected request body:
-    // { caseId: number, date: string, description: string }
-
     const { caseId, date, description } = reqBody;
 
-    // In a real application, you would:
-    // 1. Validate the incoming data (check if caseId exists).
-    // 2. Generate a new unique ID for the hearing.
-    // 3. Create a new Hearing object.
-    // 4. Add it to `hearingsData`.
-    // 5. Potentially update the corresponding Case's `hearingIds` array.
-    // 6. Return the new hearing object.
+    if (!caseId || !date || !description) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    console.log("Received hearing creation request:", {
-      caseId,
+    // Validate ObjectId
+    if (!Types.ObjectId.isValid(caseId)) {
+      return NextResponse.json(
+        { error: "Invalid case ID" },
+        { status: 400 }
+      );
+    }
+
+    // Check if case exists
+    const existingCase = await Case.findById(caseId);
+    if (!existingCase) {
+      return NextResponse.json(
+        { error: "Case not found" },
+        { status: 404 }
+      );
+    }
+
+    const newHearing = await Hearing.create({
+      caseId: new Types.ObjectId(caseId),
       date,
       description,
     });
 
-    return NextResponse.json({ message: "Hearing created!" }); // Placeholder for now
+    // Update case's hearingIds array
+    await Case.findByIdAndUpdate(caseId, {
+      $push: { hearingIds: newHearing._id },
+    });
+
+    // Populate the case reference in the response
+    const populatedHearing = await Hearing.findById(newHearing._id)
+      .populate("caseId", "title caseNumber clientName");
+
+    return NextResponse.json(populatedHearing, { status: 201 });
   } catch (error) {
     console.error("Error creating hearing:", error);
     return NextResponse.json(

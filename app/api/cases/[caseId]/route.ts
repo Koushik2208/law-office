@@ -1,21 +1,7 @@
 // app/api/cases/[caseId]/route.ts
 
 import { NextResponse, NextRequest } from "next/server";
-
-interface Case {
-  id: number;
-  title: string;
-  lawyerId: number;
-  courtId: number;
-  hearingIds: number[];
-}
-
-interface Hearing {
-  id: number;
-  caseId: number;
-  date: string;
-  description: string;
-}
+import { Case, Hearing } from "@/database";
 
 // Sample in-memory case data (same as before)
 const casesData: Case[] = [
@@ -25,10 +11,11 @@ const casesData: Case[] = [
     lawyerId: 101,
     courtId: 201,
     hearingIds: [301, 303],
+    status: "pending",
   },
-  { id: 2, title: "Case B", lawyerId: 102, courtId: 202, hearingIds: [302] },
-  { id: 3, title: "Case C", lawyerId: 101, courtId: 202, hearingIds: [] },
-  { id: 4, title: "Case D", lawyerId: 101, courtId: 201, hearingIds: [] },
+  { id: 2, title: "Case B", lawyerId: 102, courtId: 202, hearingIds: [302], status: "pending" },
+  { id: 3, title: "Case C", lawyerId: 101, courtId: 202, hearingIds: [], status: "pending" },
+  { id: 4, title: "Case D", lawyerId: 101, courtId: 201, hearingIds: [], status: "pending" },
 ];
 
 // Sample in-memory hearing data (same as before)

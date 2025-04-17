@@ -1,40 +1,42 @@
 // app/api/courts/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-
-interface Court {
-  id: number;
-  name: string;
-  location: string;
-}
+import dbConnect from "@/lib/mongoose";
+import { Court } from "@/database";
 
 export async function GET() {
-  const courts: Court[] = [
-    { id: 201, name: "Supreme Court", location: "New Delhi" },
-    { id: 202, name: "High Court", location: "Mumbai" },
-  ];
-  return NextResponse.json(courts);
+  try {
+    await dbConnect();
+    const courts = await Court.find();
+    return NextResponse.json(courts);
+  } catch (error) {
+    console.error("Error fetching courts:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch courts" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
     const reqBody = await request.json();
-
-    // Expected request body:
-    // { name: string, location: string }
-
     const { name, location } = reqBody;
 
-    // In a real application, you would:
-    // 1. Validate the incoming data.
-    // 2. Generate a new unique ID for the court.
-    // 3. Create a new Court object.
-    // 4. Add it to `courtsData`.
-    // 5. Return the new court object.
+    if (!name || !location) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    console.log("Received court creation request:", { name, location });
+    const newCourt = await Court.create({
+      name,
+      location,
+    });
 
-    return NextResponse.json({ message: "Court created!" }); // Placeholder for now
+    return NextResponse.json(newCourt, { status: 201 });
   } catch (error) {
     console.error("Error creating court:", error);
     return NextResponse.json(
