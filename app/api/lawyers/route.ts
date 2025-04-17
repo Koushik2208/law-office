@@ -2,7 +2,8 @@
 
 import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongoose";
-import { Lawyer, Case } from "@/database";
+import { Lawyer } from "@/database";
+
 export async function GET() {
   try {
     await dbConnect();
@@ -12,10 +13,7 @@ export async function GET() {
     const lawyersWithCaseCount = await Promise.all(
       lawyers.map(async (lawyer) => {
         // const caseCount = await Case.countDocuments({ lawyerId: lawyer._id });
-        return {
-          ...lawyer.toObject(),
-          // caseCount,
-        };
+        return lawyer.toObject();
       })
     );
 

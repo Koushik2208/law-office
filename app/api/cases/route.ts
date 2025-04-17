@@ -4,6 +4,7 @@ import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongoose";
 import Case from "@/database/case.model";
 import { Types } from "mongoose";
+import { Lawyer } from "@/database";
 
 export async function GET(request: NextRequest) {
   try {
@@ -91,18 +92,16 @@ export async function POST(request: NextRequest) {
       caseNumber,
       title,
       clientName,
-      lawyerId: new Types.ObjectId(lawyerId),
-      courtId: new Types.ObjectId(courtId),
+      lawyerId: lawyerId,
+      courtId: courtId,
       status,
       hearingIds: [],
     });
 
-    // Populate the references in the response
-    const populatedCase = await Case.findById(newCase._id)
-      .populate("lawyerId", "name specialization")
-      .populate("courtId", "name location");
+    // Update the caseCount on the Lawyer
+    await Lawyer.findByIdAndUpdate(lawyerId, { $inc: { caseCount: 1 } });
 
-    return NextResponse.json(populatedCase, { status: 201 });
+    return NextResponse.json(newCase, { status: 201 }); // Return the newly created case
   } catch (error) {
     console.error("Error creating case:", error);
     return NextResponse.json(
