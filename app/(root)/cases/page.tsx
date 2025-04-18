@@ -6,7 +6,7 @@ import { DataTable } from '@/components/table/data-table'
 import { columns } from '@/components/columns/case-columns'
 
 interface SearchParams {
-  searchParams: { [key: string]: string }
+  searchParams: Promise<{ [key: string]: string }>
 }
 
 const CasesPage = async ({ searchParams }: SearchParams) => {

@@ -4,8 +4,8 @@ import { DataTable } from '@/components/table/data-table'
 import { columns } from '@/components/columns/hearing-columns'
 
 interface SearchParams {
-  searchParams: { [key: string]: string }
-}
+    searchParams: Promise<{ [key: string]: string }>
+  }
 
 const HearingsPage = async ({ searchParams }: SearchParams) => {
   const { page, pageSize, query, filter, sort, caseId, startDate, endDate } = await searchParams
