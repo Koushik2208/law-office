@@ -1,58 +1,52 @@
 // app/api/lawyers/route.ts
 
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import handleError from "@/lib/handlers/error";
+import { ValidationError } from "@/lib/http-errors";
 import dbConnect from "@/lib/mongoose";
 import { Lawyer } from "@/database";
+import { LawyerSchema } from "@/lib/validations";
 
+// GET method: Fetch all lawyers without caseCount
 export async function GET() {
   try {
     await dbConnect();
-    const lawyers = await Lawyer.find();
     
-    // Get case counts for each lawyer
-    const lawyersWithCaseCount = await Promise.all(
-      lawyers.map(async (lawyer) => {
-        // const caseCount = await Case.countDocuments({ lawyerId: lawyer._id });
-        return lawyer.toObject();
-      })
-    );
+    const lawyers = await Lawyer.find();
 
-    return NextResponse.json(lawyersWithCaseCount);
+    return NextResponse.json({ success: true, data: lawyers }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching lawyers:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch lawyers" },
-      { status: 500 }
-    );
+    return handleError(error, "api") as APIErrorResponse;
   }
 }
 
-export async function POST(request: NextRequest) {
+// POST method: Create a new lawyer with validation and error handling
+export async function POST(request: Request) {
   try {
     await dbConnect();
-    const reqBody = await request.json();
-    const { name, specialization, role = "lawyer" } = reqBody;
+    const body = await request.json();
 
-    if (!name || !specialization) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    // Validate incoming data using LawyerSchema
+    const validatedData = LawyerSchema.safeParse(body);
+
+    if (!validatedData.success) {
+      throw new ValidationError(validatedData.error.flatten().fieldErrors);
     }
 
-    const newLawyer = await Lawyer.create({
-      name,
-      specialization,
-      role,
-      caseCount: 0,
-    });
+    const { email, username } = validatedData.data;
 
-    return NextResponse.json(newLawyer, { status: 201 });
+    // Check if a lawyer with the same email or username already exists
+    const existingLawyer = await Lawyer.findOne({ email });
+    if (existingLawyer) throw new Error("Lawyer already exists");
+
+    const existingLawyername = await Lawyer.findOne({ username });
+    if (existingLawyername) throw new Error("Username already exists");
+
+    // Create a new lawyer, caseCount will be managed in the Lawyer model
+    const newLawyer = await Lawyer.create(validatedData.data);
+
+    return NextResponse.json({ success: true, data: newLawyer }, { status: 201 });
   } catch (error) {
-    console.error("Error creating lawyer:", error);
-    return NextResponse.json(
-      { error: "Failed to create lawyer" },
-      { status: 500 }
-    );
+    return handleError(error, "api") as APIErrorResponse;
   }
 }

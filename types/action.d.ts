@@ -1,3 +1,11 @@
+interface PaginatedSearchParams {
+    page?: string;
+    pageSize?: string;
+    query?: string;
+    filter?: string;
+    sort?: string;
+}
+
 interface CreateCaseParams {
     caseNumber: string;
     title: string;
@@ -32,8 +40,11 @@ interface UpdateCourtParams extends Partial<CreateCourtParams> {
 
 interface CreateLawyerParams {
     name: string;
-    specialization: string;
-    role?: "admin" | "lawyer";
+    email: string;
+    password?: string;
+    barNumber?: string;
+    specialization: "Criminal Law" | "Civil Law" | "Family Law" | "Corporate Law" | "Immigration Law" | "Other";
+    role?: "admin" | "lawyer" | "guest";
 }
 
 interface UpdateLawyerParams extends Partial<CreateLawyerParams> {
@@ -44,6 +55,8 @@ interface GetCasesParams extends PaginatedSearchParams {
     lawyerId?: string;
     courtId?: string;
     status?: "pending" | "disposed";
+    startDate?: string;
+    endDate?: string;
 }
 
 interface GetHearingsParams extends PaginatedSearchParams {
@@ -51,10 +64,55 @@ interface GetHearingsParams extends PaginatedSearchParams {
     courtId?: string;
     lawyerId?: string;
     status?: "pending" | "disposed";
+    startDate?: string;
+    endDate?: string;
 }
 
-interface GetCourtsParams extends PaginatedSearchParams {}
+interface GetCourtsParams extends PaginatedSearchParams { }
 
 interface GetLawyersParams extends PaginatedSearchParams {
-    role?: "admin" | "lawyer";
-} 
+    specialization?: "Criminal Law" | "Civil Law" | "Family Law" | "Corporate Law" | "Immigration Law" | "Other";
+    name?: string;
+}
+
+interface AuthCredentials {
+    name: string;
+    email: string;
+    password?: string;
+    role?: "admin" | "lawyer" | "guest";
+    specialization?: "Criminal Law" | "Civil Law" | "Family Law" | "Corporate Law" | "Immigration Law" | "Other";
+    barNumber?: string;
+}
+
+interface SignInWithOAuthParams {
+    provider: "google";
+    providerAccountId: string;
+    user: {
+        email: string;
+        name: string;
+        username: string;
+        role?: "admin" | "lawyer" | "guest";
+    };
+}
+
+interface GetDashboardStatsParams {
+    startDate?: string;
+    endDate?: string;
+}
+
+interface GetRecentCasesParams {
+    limit?: number;
+}
+
+interface GetUpcomingHearingsParams {
+    limit?: number;
+}
+
+interface GetCaseStatusDistributionParams {
+    startDate?: string;
+    endDate?: string;
+}
+
+interface GetHearingsByMonthParams {
+    year?: number;
+}
