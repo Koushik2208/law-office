@@ -1,6 +1,6 @@
 // app/api/cases/[caseId]/route.ts
 
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { Case, Hearing } from "@/database";
 import dbConnect from "@/lib/mongoose";
 import mongoose from "mongoose";
