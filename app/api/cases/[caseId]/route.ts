@@ -1,13 +1,15 @@
 // app/api/cases/[caseId]/route.ts
 
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { Case, Hearing } from "@/database";
 import dbConnect from "@/lib/mongoose";
 import mongoose from "mongoose";
 
 export async function GET({
+  _request,
   params
 }: {
+  _request: NextRequest,
   params: Promise<{ caseId: string }>
 }) {
   await dbConnect();
