@@ -3,7 +3,7 @@
 import dbConnect from "@/lib/mongoose";
 import Lawyer from "@/database/lawyer.model";
 import Case from "@/database/case.model";
-import { Types } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import logger from "@/lib/logger";
 
 export async function getLawyers(params: GetLawyersParams = {}) {
@@ -20,7 +20,7 @@ export async function getLawyers(params: GetLawyersParams = {}) {
       role
     } = params;
 
-    let searchQuery: any = {};
+    const searchQuery: FilterQuery<typeof Lawyer> = {};
 
     // Handle specific filters
     if (role) {

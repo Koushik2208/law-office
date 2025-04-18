@@ -3,7 +3,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import dbConnect from "@/lib/mongoose";
 import Case from "@/database/case.model";
-import { Types } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import { Lawyer } from "@/database";
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const caseNumberFilter = searchParams.get("caseNumber");
     const clientNameFilter = searchParams.get("clientName");
 
-    let query: any = {};
+    const query: FilterQuery<typeof Case> = {};
 
     if (lawyerIdFilter) {
       if (Types.ObjectId.isValid(lawyerIdFilter)) {

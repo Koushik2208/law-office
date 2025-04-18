@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { formUrlQuery, removeKeysFromUrlQuery } from "@/lib/url"
-import { formatDate } from "@/lib/utils"
 
 export default function DateFilter() {
   const router = useRouter()

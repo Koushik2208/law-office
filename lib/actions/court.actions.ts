@@ -2,7 +2,7 @@
 
 import dbConnect from "@/lib/mongoose";
 import Court from "@/database/court.model";
-import { Types } from "mongoose";
+import { FilterQuery, Types } from "mongoose";
 import logger from "@/lib/logger";
 
 export async function getCourts(params: GetCourtsParams = {}) {
@@ -18,7 +18,7 @@ export async function getCourts(params: GetCourtsParams = {}) {
       sort = "name"
     } = params;
 
-    let searchQuery: any = {};
+    const searchQuery: FilterQuery<typeof Court> = {};
 
     // Handle general search query
     if (query) {

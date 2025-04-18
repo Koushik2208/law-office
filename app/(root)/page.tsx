@@ -55,7 +55,7 @@ async function RecentCases() {
       <CardContent>
         <ScrollArea className="h-[300px]">
           <div className="space-y-4">
-            {cases.map((caseItem: any) => (
+            {cases.map((caseItem: Case) => (
               <div key={caseItem._id} className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">
@@ -92,7 +92,7 @@ async function UpcomingHearings() {
       <CardContent>
         <ScrollArea className="h-[300px]">
           <div className="space-y-4">
-            {hearings.map((hearing: any) => (
+            {hearings.map((hearing: Hearing) => (
               <div key={hearing._id} className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">
@@ -125,7 +125,7 @@ async function CaseStatusDistribution() {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {statuses.map((status: any) => (
+          {statuses.map((status: { _id: string; count: number }) => (
             <div key={status._id} className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-sm font-medium capitalize">{status._id}</p>
@@ -150,7 +150,7 @@ async function HearingsByMonth() {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {monthlyData.map((month: any) => (
+          {monthlyData.map((month: { _id: number; count: number }) => (
             <div key={month._id} className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-sm font-medium">
