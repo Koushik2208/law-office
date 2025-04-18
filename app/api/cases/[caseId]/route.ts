@@ -5,13 +5,14 @@ import { Case, Hearing } from "@/database";
 import dbConnect from "@/lib/mongoose";
 import mongoose from "mongoose";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { caseId: string } }
-) {
+export async function GET({
+  params
+}: {
+  params: Promise<{ caseId: string }>
+}) {
   await dbConnect();
 
-  const { caseId } = params;
+  const { caseId } = await params;
 
   // Validate if the ID is a valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(caseId)) {
