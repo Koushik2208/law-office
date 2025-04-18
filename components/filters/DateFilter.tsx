@@ -5,8 +5,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon } from "lucide-react"
-import { format } from "date-fns"
 import { formUrlQuery, removeKeysFromUrlQuery } from "@/lib/url"
+import { formatDate, formatDateLong } from "@/lib/utils"
 
 export default function DateFilter() {
   const router = useRouter()
@@ -18,7 +18,7 @@ export default function DateFilter() {
     const paramName = type === 'start' ? 'startDate' : 'endDate'
     
     if (date) {
-      const formattedDate = format(date, 'yyyy-MM-dd')
+      const formattedDate = formatDate(date)
       const newUrl = formUrlQuery({
         params: searchParams.toString(),
         key: paramName,
@@ -49,7 +49,7 @@ export default function DateFilter() {
               }`}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate ? format(new Date(startDate), "PPP") : "Pick a date"}
+              {startDate ? formatDateLong(new Date(startDate)) : "Pick a date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -76,7 +76,7 @@ export default function DateFilter() {
               }`}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate ? format(new Date(endDate), "PPP") : "Pick a date"}
+              {endDate ? formatDateLong(new Date(endDate)) : "Pick a date"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">

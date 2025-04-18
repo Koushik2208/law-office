@@ -8,7 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { formatDateLong } from "@/lib/utils";
 import { Suspense } from "react";
 
 // Stats Cards Component
@@ -99,7 +99,7 @@ async function UpcomingHearings() {
                     {hearing.caseId?.title}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(hearing.date), "MMM dd, yyyy")}
+                    {formatDateLong(new Date(hearing.date))}
                   </p>
                 </div>
                 <p className="text-sm text-muted-foreground">
