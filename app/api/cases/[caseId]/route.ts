@@ -5,13 +5,10 @@ import { Case, Hearing } from "@/database";
 import dbConnect from "@/lib/mongoose";
 import mongoose from "mongoose";
 
-export async function GET({
-  _request,
-  params
-}: {
-  _request: NextRequest,
-  params: Promise<{ caseId: string }>
-}) {
+export async function GET(
+  _: NextRequest,
+  { params }: { params: Promise<{ caseId: string }> }
+) {
   await dbConnect();
 
   const { caseId } = await params;
