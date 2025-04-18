@@ -2,53 +2,23 @@
 
 import { NextResponse, NextRequest } from "next/server";
 import { Case, Hearing } from "@/database";
+import dbConnect from "@/lib/mongoose";
+import mongoose from "mongoose";
 
-// Sample in-memory case data (same as before)
-const casesData: Case[] = [
-  {
-    id: 1,
-    title: "Case A",
-    lawyerId: 101,
-    courtId: 201,
-    hearingIds: [301, 303],
-    status: "pending",
-  },
-  { id: 2, title: "Case B", lawyerId: 102, courtId: 202, hearingIds: [302], status: "pending" },
-  { id: 3, title: "Case C", lawyerId: 101, courtId: 202, hearingIds: [], status: "pending" },
-  { id: 4, title: "Case D", lawyerId: 101, courtId: 201, hearingIds: [], status: "pending" },
-];
-
-// Sample in-memory hearing data (same as before)
-const hearingsData: Hearing[] = [
-  { id: 301, caseId: 1, date: "2024-05-10", description: "Initial hearing" },
-  {
-    id: 302,
-    caseId: 2,
-    date: "2024-05-15",
-    description: "Document submission",
-  },
-  {
-    id: 303,
-    caseId: 1,
-    date: "2024-05-22",
-    description: "Witness examination",
-  },
-  { id: 304, caseId: 3, date: "2024-06-01", description: "First mention" },
-];
-
-// Handler for GET requests to /api/cases/[caseId]
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { caseId: string } } // Access the dynamic caseId parameter
+  _request: NextRequest,
+  { params }: { params: { caseId: string } }
 ) {
-  const { caseId } = params;
-  const caseIdInt = parseInt(caseId, 10);
+  await dbConnect();
 
-  if (isNaN(caseIdInt)) {
+  const { caseId } = params;
+
+  // Validate if the ID is a valid MongoDB ObjectId
+  if (!mongoose.Types.ObjectId.isValid(caseId)) {
     return NextResponse.json({ error: "Invalid case ID" }, { status: 400 });
   }
 
-  const caseDetails = casesData.find((caseItem) => caseItem.id === caseIdInt);
+  const caseDetails = await Case.findById(caseId).lean();
 
   if (!caseDetails) {
     return NextResponse.json(
@@ -57,10 +27,8 @@ export async function GET(
     );
   }
 
-  // Filter hearings associated with this case
-  const caseHearings = hearingsData.filter(
-    (hearing) => hearing.caseId === caseIdInt
-  );
+  // Fetch hearings related to this case
+  const caseHearings = await Hearing.find({ caseId }).lean();
 
   return NextResponse.json({ ...caseDetails, hearings: caseHearings });
 }
