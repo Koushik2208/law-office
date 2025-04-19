@@ -31,7 +31,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (statusFilter) {
-      if (statusFilter === "pending" || statusFilter === "disposed") {
+      if (
+        statusFilter === "pending" ||
+        statusFilter === "disposed" ||
+        statusFilter === "unassigned"
+      ) {
         query.status = statusFilter;
       }
     }
@@ -62,7 +66,14 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const reqBody = await request.json();
-    const { caseNumber, title, clientName, lawyerId, courtId, status = "pending" } = reqBody;
+    const {
+      caseNumber,
+      title,
+      clientName,
+      lawyerId,
+      courtId,
+      status = "pending",
+    } = reqBody;
 
     if (!caseNumber || !title || !clientName || !lawyerId || !courtId) {
       return NextResponse.json(

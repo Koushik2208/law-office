@@ -17,7 +17,9 @@ type APIResponse<T = null> = NextResponse<SuccessResponse<T> | ErrorResponse>;
 interface Lawyer {
   _id: Types.ObjectId;
   name: string;
+  email?: string;
   specialization: string;
+  barNumber?: string;
   caseCount: number;
   role: "admin" | "lawyer";
 }
@@ -30,7 +32,9 @@ interface Case {
   lawyerId: Types.ObjectId;
   courtId: Types.ObjectId;
   hearingIds: Types.ObjectId[];
-  status: "pending" | "disposed";
+  status: "pending" | "disposed" | "unassigned";
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Court {
@@ -58,4 +62,3 @@ interface RouteParams {
   params: Promise<Record<string, string>>;
   searchParams: Promise<Record<string, string>>;
 }
-

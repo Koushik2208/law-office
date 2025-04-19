@@ -1,113 +1,121 @@
 "use server";
 
-import dbConnect from "@/lib/mongoose";
 import Lawyer from "@/database/lawyer.model";
-import Case from "@/database/case.model";
-import { FilterQuery, Types } from "mongoose";
-import logger from "@/lib/logger";
+import { FilterQuery } from "mongoose";
+import action from "../handlers/action";
+import {
+  CreateLawyerSchema,
+  IdSchema,
+  LawyerSchema,
+  UpdateLawyerSchema,
+} from "../validations";
+import handleError from "../handlers/error";
+import { NotFoundError } from "../http-errors";
+import { Case } from "@/database";
 
-export async function getLawyers(params: GetLawyersParams = {}) {
+export async function getLawyers(
+  params: GetLawyersParams
+): Promise<ActionResponse<{ lawyers: Lawyer[]; isNext: boolean }>> {
+  const validationResult = await action({
+    params,
+    schema: LawyerSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const {
+    page = 1,
+    pageSize = 10,
+    query,
+    sort,
+    role,
+  } = validationResult.params!;
+
+  const skip = (Number(page) - 1) * Number(pageSize);
+  const limit = Number(pageSize);
+  const filterQuery: FilterQuery<typeof Lawyer> = {};
+
+  if (role) {
+    filterQuery.role = role;
+  } else {
+    filterQuery.role = { $in: ["admin", "lawyer", "guest"] };
+  }
+
+  if (query) {
+    filterQuery.$or = [
+      { name: { $regex: query, $options: "i" } },
+      { email: { $regex: query, $options: "i" } },
+      { specialization: { $regex: query, $options: "i" } },
+      { role: { $regex: query, $options: "i" } },
+    ];
+  }
+
+  let sortCriteria: Record<string, 1 | -1> = {};
+
+  if (sort) {
+    sortCriteria = { [sort]: 1 };
+  } else {
+    sortCriteria = { name: 1 };
+  }
+
   try {
-    await dbConnect();
-    logger.info({ params }, "Fetching lawyers with params");
-    
-    const { 
-      page = 1, 
-      pageSize = 10, 
-      query, 
-      filter, 
-      sort = "name",
-      role
-    } = params;
+    const totalLawyers = await Lawyer.countDocuments(filterQuery);
 
-    const searchQuery: FilterQuery<typeof Lawyer> = {};
+    const lawyers = await Lawyer.find(filterQuery)
+      .sort(sortCriteria)
+      .skip(skip)
+      .limit(limit);
 
-    // Handle specific filters
-    if (role) {
-      searchQuery.role = role;
-    }
+    const isNext = totalLawyers > skip + lawyers.length;
 
-    // Handle general search query
-    if (query) {
-      searchQuery.$or = [
-        { name: { $regex: query, $options: "i" } },
-        { specialization: { $regex: query, $options: "i" } }
-      ];
-    }
-
-    // Handle additional filters
-    if (filter) {
-      try {
-        const filterObj = JSON.parse(filter);
-        Object.assign(searchQuery, filterObj);
-      } catch (e) {
-        logger.error({ error: e }, "Invalid filter format");
-      }
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * pageSize;
-
-    // Execute query
-    const [lawyers, total] = await Promise.all([
-      Lawyer.find(searchQuery)
-        .sort(sort)
-        .skip(skip)
-        .limit(pageSize),
-      Lawyer.countDocuments(searchQuery)
-    ]);
-
-    logger.info({ count: lawyers.length, total }, "Successfully fetched lawyers");
-    
-    // Serialize the data before returning
-    const serializedLawyers = JSON.parse(JSON.stringify(lawyers));
-    
     return {
-      data: serializedLawyers,
-      pagination: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize)
-      }
+      success: true,
+      data: { lawyers: JSON.parse(JSON.stringify(lawyers)), isNext },
     };
   } catch (error) {
-    logger.error({ error }, "Error fetching lawyers");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
 }
+export async function getLawyerById(
+  params: IdParams
+): Promise<ActionResponse<Lawyer>> {
+  const validationResult = await action({
+    params,
+    schema: IdSchema,
+  });
 
-export async function getLawyerById(id: string) {
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { id } = validationResult.params!;
+
   try {
-    await dbConnect();
-    logger.info({ lawyerId: id }, "Fetching lawyer by ID");
-    
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ lawyerId: id }, "Invalid lawyer ID");
-      throw new Error("Invalid lawyer ID");
-    }
-
     const lawyer = await Lawyer.findById(id);
-    if (!lawyer) {
-      logger.error({ lawyerId: id }, "Lawyer not found");
-      throw new Error("Lawyer not found");
-    }
-
-    logger.info({ lawyerId: id }, "Successfully fetched lawyer");
-    return lawyer;
+    if (!lawyer) throw new NotFoundError("Lawyer");
+    return { success: true, data: JSON.parse(JSON.stringify(lawyer)) };
   } catch (error) {
-    logger.error({ error, lawyerId: id }, "Error fetching lawyer by ID");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
 }
 
-export async function createLawyer(data: CreateLawyerParams) {
-  try {
-    await dbConnect();
-    logger.info({ data }, "Creating new lawyer");
-    
-    const { name, specialization, role = "lawyer" } = data;
+export async function createLawyer(
+  params: CreateLawyerParams
+): Promise<ActionResponse<Lawyer>> {
+  const validationResult = await action({
+    params,
+    schema: CreateLawyerSchema,
+  });
 
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { name, specialization, role } = validationResult.params!;
+
+  try {
     const newLawyer = await Lawyer.create({
       name,
       specialization,
@@ -115,73 +123,84 @@ export async function createLawyer(data: CreateLawyerParams) {
       caseCount: 0,
     });
 
-    logger.info({ lawyerId: newLawyer._id }, "Successfully created lawyer");
-    return newLawyer;
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(newLawyer)),
+    };
   } catch (error) {
-    logger.error({ error, data }, "Error creating lawyer");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
 }
 
-export async function updateLawyer(data: UpdateLawyerParams) {
+export async function updateLawyer(
+  params: UpdateLawyerParams
+): Promise<ActionResponse<Lawyer>> {
+  const validationResult = await action({
+    params,
+    schema: UpdateLawyerSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { id, ...updateData } = validationResult.params!;
+
   try {
-    await dbConnect();
-    logger.info({ data }, "Updating lawyer");
-    
-    const { id, ...updateData } = data;
-
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ lawyerId: id }, "Invalid lawyer ID");
-      throw new Error("Invalid lawyer ID");
-    }
-
-    const updatedLawyer = await Lawyer.findByIdAndUpdate(
-      id,
-      { ...updateData },
-      { new: true }
-    );
+    const updatedLawyer = await Lawyer.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedLawyer) {
-      logger.error({ lawyerId: id }, "Lawyer not found");
-      throw new Error("Lawyer not found");
+      throw new NotFoundError("Lawyer");
     }
 
-    logger.info({ lawyerId: id }, "Successfully updated lawyer");
-    return updatedLawyer;
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(updatedLawyer)),
+    };
   } catch (error) {
-    logger.error({ error, data }, "Error updating lawyer");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
 }
 
-export async function deleteLawyer(id: string) {
-  try {
-    await dbConnect();
-    logger.info({ lawyerId: id }, "Deleting lawyer");
-    
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ lawyerId: id }, "Invalid lawyer ID");
-      throw new Error("Invalid lawyer ID");
-    }
+export async function deleteLawyer(
+  params: IdParams
+): Promise<ActionResponse<null>> {
+  const validationResult = await action({
+    params,
+    schema: IdSchema,
+  });
 
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { id } = validationResult.params!;
+
+  try {
     const lawyer = await Lawyer.findById(id);
     if (!lawyer) {
-      logger.error({ lawyerId: id }, "Lawyer not found");
-      throw new Error("Lawyer not found");
+      return { success: false, error: { message: "Lawyer not found" } };
     }
 
-    // Check if lawyer has any cases
-    const caseCount = await Case.countDocuments({ lawyerId: id });
-    if (caseCount > 0) {
-      logger.error({ lawyerId: id, caseCount }, "Cannot delete lawyer with assigned cases");
-      throw new Error("Cannot delete lawyer with assigned cases");
-    }
+    await Case.updateMany(
+      { lawyerId: id },
+      { status: "unassigned", lawyerId: null }
+    );
 
     const deletedLawyer = await Lawyer.findByIdAndDelete(id);
-    logger.info({ lawyerId: id }, "Successfully deleted lawyer");
-    return deletedLawyer;
+
+    if (!deletedLawyer) {
+      return { success: false, error: { message: "Failed to delete lawyer" } };
+    }
+
+    return {
+      success: true,
+      data: null,
+    };
   } catch (error) {
-    logger.error({ error, lawyerId: id }, "Error deleting lawyer");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
-} 
+}

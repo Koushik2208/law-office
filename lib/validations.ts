@@ -1,4 +1,4 @@
-import { LawyerSpecialization } from "@/types/enums";
+import { CaseStatus, LawyerRole, LawyerSpecialization } from "@/types/enums";
 import { z } from "zod";
 
 export const AccountSchema = z.object({
@@ -97,25 +97,17 @@ export const PaginatedSearchParamsSchema = z.object({
   sort: z.string().optional(),
 });
 
-export const LawyerSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long." }),
-  email: z.string().email({ message: "Please provide a valid email address." }),
-  image: z.string().url({ message: "Please provide a valid URL." }).optional(),
-  phone: z.string().optional(),
-  role: z.literal("lawyer"),
-  barNumber: z.string().optional(),
-  specialization: z.nativeEnum(LawyerSpecialization),
+export const LawyerSchema = PaginatedSearchParamsSchema.extend({
+  specialization: z.nativeEnum(LawyerSpecialization).optional(),
+  role: z.nativeEnum(LawyerRole).optional(),
 });
 
-export const CaseSchema = z.object({
-  caseNumber: z.string().min(1, { message: "Case number is required." }),
-  title: z.string().min(1, { message: "Title is required." }),
-  clientName: z.string().min(1, { message: "Client name is required." }),
-  lawyerId: z.string().min(1, { message: "Lawyer ID is required." }),
-  courtId: z.string().min(1, { message: "Court ID is required." }),
+export const CaseSchema = PaginatedSearchParamsSchema.extend({
+  lawyerId: z.string().optional(),
+  courtId: z.string().optional(),
+  status: z.nativeEnum(CaseStatus).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 });
 
 export const CourtSchema = z.object({
@@ -132,13 +124,48 @@ export const HearingSchema = z.object({
   notes: z.string().optional(),
 });
 
-export const CreateLawyerSchema = LawyerSchema;
-export const UpdateLawyerSchema = LawyerSchema.partial();
+export const IdSchema = z.object({
+  id: z.string().min(1, { message: "ID is required." }),
+});
+
+export const CreateLawyerSchema = z.object({
+  name: z.string().min(1, { message: "Name is required." }),
+  email: z.string().email({ message: "Please provide a valid email address." }),
+  password: z
+    .string()
+    .min(6, {
+      message: "Password must be at least 6 characters long.",
+    })
+    .optional(),
+  barNumber: z.string().optional(),
+  specialization: z.nativeEnum(LawyerSpecialization, {
+    required_error: "Specialization is required.",
+  }),
+  role: z.nativeEnum(LawyerRole),
+});
+
+export const UpdateLawyerSchema = LawyerSchema.partial().extend({
+  id: z.string().min(1, "Lawyer ID is required"),
+});
 export const DeleteLawyerSchema = z.object({
   id: z.string().min(1, { message: "Lawyer ID is required." }),
 });
 
-export const CreateCaseSchema = CaseSchema;
+export const CreateCaseSchema = z.object({
+  title: z.string().min(1, { message: "Case name is required." }),
+  caseNumber: z.string().refine((val) => /^[A-Z0-9]{16}$/.test(val), {
+    message:
+      "Case number is required and must be a 16-digit alphanumeric code without hyphens or spaces.",
+  }),
+  clientName: z.string().min(1, { message: "Client name is required." }),
+  lawyerId: z.string().min(1, { message: "Lawyer ID is required." }),
+  courtId: z.string().min(1, { message: "Court ID is required." }),
+  hearingIds: z.array(z.string()).optional(),
+  status: z.nativeEnum(CaseStatus, {
+    required_error: "Status is required.",
+  }),
+});
+
 export const UpdateCaseSchema = CaseSchema.partial();
 export const DeleteCaseSchema = z.object({
   id: z.string().min(1, { message: "Case ID is required." }),

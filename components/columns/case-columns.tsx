@@ -1,29 +1,18 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "../table/DataTableColumnHeader"
-import { Button } from "../ui/button"
-import { MoreHorizontal } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import { Checkbox } from "../ui/checkbox"
-
-export type Case = {
-  _id: string
-  title: string
-  caseNumber: string
-  clientName: string
-  status: string
-  lawyerId?: {
-    name: string
-    specialization: string
-  }
-  courtId?: {
-    name: string
-    location: string
-  }
-  createdAt: string
-  updatedAt: string
-}
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "../table/DataTableColumnHeader";
+import { Button } from "../ui/button";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Checkbox } from "../ui/checkbox";
 
 export const columns: ColumnDef<Case>[] = [
   {
@@ -81,9 +70,7 @@ export const columns: ColumnDef<Case>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <div className="capitalize font-medium">
-        {row.getValue("status")}
-      </div>
+      <div className="capitalize font-medium">{row.getValue("status")}</div>
     ),
   },
   {
@@ -92,12 +79,14 @@ export const columns: ColumnDef<Case>[] = [
       <DataTableColumnHeader column={column} title="Lawyer" />
     ),
     cell: ({ row }) => {
-      const lawyer = row.getValue("lawyerId") as { name: string; specialization: string } | undefined
+      const lawyer = row.getValue("lawyerId") as
+        | { name: string; specialization: string }
+        | undefined;
       return lawyer ? (
         <div className="text-sm">
           {lawyer.name} ({lawyer.specialization})
         </div>
-      ) : null
+      ) : null;
     },
   },
   {
@@ -106,29 +95,20 @@ export const columns: ColumnDef<Case>[] = [
       <DataTableColumnHeader column={column} title="Court" />
     ),
     cell: ({ row }) => {
-      const court = row.getValue("courtId") as { name: string; location: string } | undefined
+      const court = row.getValue("courtId") as
+        | { name: string; location: string }
+        | undefined;
       return court ? (
         <div className="text-sm">
           {court.name} ({court.location})
         </div>
-      ) : null
+      ) : null;
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created At" />
-    ),
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {new Date(row.getValue("createdAt")).toLocaleDateString()}
-      </div>
-    ),
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const case_ = row.original
+      const case_ = row.original;
 
       return (
         <DropdownMenu>
@@ -141,9 +121,7 @@ export const columns: ColumnDef<Case>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() =>
-                navigator.clipboard.writeText(case_._id)
-              }
+              onClick={() => navigator.clipboard.writeText(case_._id)}
             >
               Copy Case ID
             </DropdownMenuItem>
@@ -153,7 +131,7 @@ export const columns: ColumnDef<Case>[] = [
             <DropdownMenuItem>View Hearings</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];

@@ -1,22 +1,18 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "../table/DataTableColumnHeader"
-import { Button } from "../ui/button"
-import { MoreHorizontal } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import { Checkbox } from "../ui/checkbox"
-
-export type Lawyer = {
-  _id: string
-  name: string
-  email: string
-  phone: string
-  specialization: string
-  barNumber: string
-  createdAt: string
-  updatedAt: string
-}
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "../table/DataTableColumnHeader";
+import { Button } from "../ui/button";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Checkbox } from "../ui/checkbox";
 
 export const columns: ColumnDef<Lawyer>[] = [
   {
@@ -75,34 +71,21 @@ export const columns: ColumnDef<Lawyer>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Email" />
     ),
-    cell: ({ row }) => (
-      <div className="text-sm">{row.getValue("email")}</div>
-    ),
+    cell: ({ row }) => <div className="text-sm">{row.getValue("email")}</div>,
   },
   {
-    accessorKey: "phone",
+    accessorKey: "caseCount",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone" />
+      <DataTableColumnHeader column={column} title="Case Count" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">{row.getValue("phone")}</div>
-    ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created At" />
-    ),
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {new Date(row.getValue("createdAt")).toLocaleDateString()}
-      </div>
+      <div className="text-sm">{row.getValue("caseCount")}</div>
     ),
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const lawyer = row.original
+      const lawyer = row.original;
 
       return (
         <DropdownMenu>
@@ -115,9 +98,7 @@ export const columns: ColumnDef<Lawyer>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() =>
-                navigator.clipboard.writeText(lawyer._id)
-              }
+              onClick={() => navigator.clipboard.writeText(lawyer._id)}
             >
               Copy Lawyer ID
             </DropdownMenuItem>
@@ -127,7 +108,7 @@ export const columns: ColumnDef<Lawyer>[] = [
             <DropdownMenuItem>View Cases</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];

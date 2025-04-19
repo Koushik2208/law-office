@@ -1,9 +1,25 @@
-import { getLawyers } from '@/lib/actions/lawyer.actions'
-import { DataTable } from '@/components/table/data-table'
-import { columns } from '@/components/columns/lawyer-columns'
+import { DataTable } from "@/components/table/data-table";
+import { columns } from "@/components/columns/lawyer-columns";
+import { getLawyers } from "@/lib/actions/lawyer.actions";
 
-const LawyersPage = async () => {
-  const { data: lawyers } = await getLawyers()
+interface SearchParams {
+  searchParams: Promise<{ [key: string]: string }>;
+}
+
+const LawyersPage = async ({ searchParams }: SearchParams) => {
+  const { page, pageSize, query, filter, role } = await searchParams; // Ensure you await the promise
+
+  const { data, error } = await getLawyers({
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+    query,
+    filter,
+    role,
+  });
+
+  const { lawyers = [] } = data || {};
+
+  if (error) return <p>Something went wrong!!!</p>;
 
   return (
     <div className="container mx-auto py-10">
@@ -15,7 +31,7 @@ const LawyersPage = async () => {
       </div>
       <DataTable columns={columns} data={lawyers} />
     </div>
-  )
-}
+  );
+};
 
 export default LawyersPage;

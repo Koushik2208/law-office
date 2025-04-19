@@ -1,9 +1,5 @@
+import { CaseStatus } from "@/types/enums";
 import { model, models, Schema, Document, Types } from "mongoose";
-
-export enum CaseStatus {
-  Pending = "pending",
-  Disposed = "disposed",
-}
 
 export interface ICase {
   caseNumber: string;
@@ -36,4 +32,4 @@ const CaseSchema = new Schema<ICase>(
 
 const Case = models.Case || model<ICase>("Case", CaseSchema);
 
-export default Case; 
+export default Case;

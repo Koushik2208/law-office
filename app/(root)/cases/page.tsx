@@ -1,45 +1,43 @@
-import { getCases } from '@/lib/actions/case.actions'
-import LawyerFilter from '@/components/filters/LawyerFilter'
-import CourtFilter from '@/components/filters/CourtFilter'
-import DateFilter from '@/components/filters/DateFilter'
-import { DataTable } from '@/components/table/data-table'
-import { columns } from '@/components/columns/case-columns'
+import { columns } from "@/components/columns/case-columns";
+import CourtFilter from "@/components/filters/CourtFilter";
+import DateFilter from "@/components/filters/DateFilter";
+import LawyerFilter from "@/components/filters/LawyerFilter";
+import { DataTable } from "@/components/table/data-table";
+import { getCases } from "@/lib/actions/case.actions";
+import React from "react";
 
 interface SearchParams {
-  searchParams: Promise<{ [key: string]: string }>
+  searchParams: Promise<{ [key: string]: string }>;
 }
 
 const CasesPage = async ({ searchParams }: SearchParams) => {
-  const { page, pageSize, query, filter, sort, courtId, lawyerId, startDate, endDate } = await searchParams
-
-  // Create filter object for date range if dates are provided
-  let dateFilter = {}
-  if (startDate || endDate) {
-    dateFilter = {
-      createdAt: {
-        ...(startDate && { $gte: new Date(startDate) }),
-        ...(endDate && { $lte: new Date(endDate) })
-      }
-    }
-  }
-
-  // Combine date filter with any existing filter
-  const combinedFilter = filter 
-    ? JSON.stringify({ ...JSON.parse(filter), ...dateFilter })
-    : Object.keys(dateFilter).length > 0 
-      ? JSON.stringify(dateFilter)
-      : undefined
-
-  const { data: cases } = await getCases({
-    page: page ? parseInt(page) : 1,
-    pageSize: pageSize ? parseInt(pageSize) : 10,
+  const {
+    page,
+    pageSize,
     query,
-    filter: combinedFilter,
-    sort,
+    filter,
+    lawyerId,
     courtId,
-    lawyerId
-  })
+    status,
+    startDate,
+    endDate,
+  } = await searchParams;
 
+  const { data, error } = await getCases({
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 10,
+    query,
+    filter,
+    lawyerId,
+    courtId,
+    status,
+    startDate,
+    endDate,
+  });
+
+  const { cases = [] } = data || {};
+
+  if (error) return <p>Something went wrong!!!</p>;
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
@@ -55,7 +53,7 @@ const CasesPage = async ({ searchParams }: SearchParams) => {
       </div>
       <DataTable columns={columns} data={cases} />
     </div>
-  )
-}
+  );
+};
 
 export default CasesPage;
