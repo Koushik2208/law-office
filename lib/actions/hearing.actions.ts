@@ -1,206 +1,327 @@
 "use server";
 
-import dbConnect from "@/lib/mongoose";
+import action from "../handlers/action";
 import Hearing from "@/database/hearing.model";
+import { revalidatePath } from "next/cache";
 import Case from "@/database/case.model";
-import { Types, FilterQuery } from "mongoose";
-import logger from "@/lib/logger";
+import { FilterQuery } from "mongoose";
+import {
+  HearingSchema,
+  CreateHearingSchema,
+  UpdateHearingSchema,
+  IdSchema,
+} from "../validations";
 
-export async function getHearings(params: GetHearingsParams = {}) {
+export async function getHearings(
+  params: GetHearingsParams
+): Promise<
+  ActionResponse<{
+    hearings: Hearing[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }>
+> {
+  const validationResult = await action({
+    params,
+    schema: HearingSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return {
+      success: false,
+      error: { message: validationResult.message },
+    };
+  }
+
+  const {
+    page = 1,
+    pageSize = 10,
+    caseId,
+    caseNumber,
+    startDate,
+    endDate,
+  } = validationResult.params!;
+  const skip = (page - 1) * pageSize;
+
   try {
-    await dbConnect();
-    logger.info({ params }, "Fetching hearings with params");
-    
-    const { 
-      page = 1, 
-      pageSize = 10, 
-      query, 
-      filter, 
-      sort = "-date",
-      caseId
-    } = params;
+    const filterQuery: FilterQuery<typeof Hearing> = {};
 
-    const searchQuery: FilterQuery<typeof Hearing> = {};
-
-    // Handle specific filters
-    if (caseId && Types.ObjectId.isValid(caseId)) {
-      searchQuery.caseId = new Types.ObjectId(caseId);
-    }
-
-    // Handle general search query
-    if (query) {
-      searchQuery.$or = [
-        { description: { $regex: query, $options: "i" } }
-      ];
-    }
-
-    // Handle additional filters
-    if (filter) {
-      try {
-        const filterObj: FilterQuery<typeof Hearing> = JSON.parse(filter);
-        Object.assign(searchQuery, filterObj);
-      } catch (e) {
-        logger.error({ error: e }, "Invalid filter format");
+    if (caseId) {
+      filterQuery.caseId = caseId;
+    } else if (caseNumber) {
+      const caseDoc = await Case.findOne({ caseNumber });
+      if (caseDoc) {
+        filterQuery.caseId = caseDoc._id;
       }
     }
 
-    // Calculate pagination
-    const skip = (page - 1) * pageSize;
+    if (startDate && endDate) {
+      filterQuery.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
 
-    // Execute query
-    const [hearings, total] = await Promise.all([
-      Hearing.find(searchQuery)
-        .populate("caseId", "title caseNumber clientName")
-        .sort(sort)
-        .skip(skip)
-        .limit(pageSize),
-      Hearing.countDocuments(searchQuery)
-    ]);
+    const hearings = await Hearing.find(filterQuery)
+      .populate("caseId", "caseNumber title clientName")
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ date: -1 });
 
-    logger.info({ count: hearings.length, total }, "Successfully fetched hearings");
-    
-    // Serialize the data before returning
-    const serializedHearings = JSON.parse(JSON.stringify(hearings));
-    
+    const total = await Hearing.countDocuments(filterQuery);
+
     return {
-      data: serializedHearings,
-      pagination: {
+      success: true,
+      data: {
+        hearings: JSON.parse(JSON.stringify(hearings)),
         total,
         page,
         pageSize,
-        totalPages: Math.ceil(total / pageSize)
-      }
+      },
     };
   } catch (error) {
-    logger.error({ error }, "Error fetching hearings");
-    throw error;
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : "An error occurred",
+      },
+    };
   }
 }
 
-export async function getHearingById(id: string) {
+export async function getHearingById(
+  params: IdParams
+): Promise<ActionResponse<Hearing>> {
+  const validationResult = await action({
+    params,
+    schema: IdSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return {
+      success: false,
+      error: { message: validationResult.message },
+    };
+  }
+
+  const { id } = validationResult.params!;
+
   try {
-    await dbConnect();
-    logger.info({ hearingId: id }, "Fetching hearing by ID");
-    
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ hearingId: id }, "Invalid hearing ID");
-      throw new Error("Invalid hearing ID");
-    }
-
-    const hearing = await Hearing.findById(id)
-      .populate("caseId", "title caseNumber clientName");
-
+    const hearing = await Hearing.findById(id).populate(
+      "caseId",
+      "caseNumber title clientName"
+    );
     if (!hearing) {
-      logger.error({ hearingId: id }, "Hearing not found");
-      throw new Error("Hearing not found");
+      return {
+        success: false,
+        error: { message: "Hearing not found" },
+      };
     }
 
-    logger.info({ hearingId: id }, "Successfully fetched hearing");
-    return hearing;
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(hearing)),
+    };
   } catch (error) {
-    logger.error({ error, hearingId: id }, "Error fetching hearing by ID");
-    throw error;
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : "An error occurred",
+      },
+    };
   }
 }
 
-export async function createHearing(data: CreateHearingParams) {
+export async function createHearing(
+  params: CreateHearingParams
+): Promise<ActionResponse<Hearing>> {
+  const validationResult = await action({
+    params,
+    schema: CreateHearingSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return {
+      success: false,
+      error: { message: validationResult.message },
+    };
+  }
+
+  const { caseNumber, date, description } = validationResult.params!;
+
   try {
-    await dbConnect();
-    logger.info({ data }, "Creating new hearing");
-    
-    const { caseId, date, description } = data;
-
-    if (!Types.ObjectId.isValid(caseId)) {
-      logger.error({ caseId }, "Invalid case ID");
-      throw new Error("Invalid case ID");
+    // Find case by caseNumber
+    const caseDoc = await Case.findOne({ caseNumber });
+    if (!caseDoc) {
+      return {
+        success: false,
+        error: { message: "Case not found" },
+      };
     }
 
-    const existingCase = await Case.findById(caseId);
-    if (!existingCase) {
-      logger.error({ caseId }, "Case not found");
-      throw new Error("Case not found");
-    }
-
-    const newHearing = await Hearing.create({
-      caseId: new Types.ObjectId(caseId),
+    const hearing = await Hearing.create({
+      caseId: caseDoc._id,
       date,
       description,
     });
 
-    await Case.findByIdAndUpdate(caseId, {
-      $push: { hearingIds: newHearing._id },
+    // Update case's hearingIds
+    await Case.findByIdAndUpdate(caseDoc._id, {
+      $push: { hearingIds: hearing._id },
     });
 
-    logger.info({ hearingId: newHearing._id, caseId }, "Successfully created hearing");
-    return await Hearing.findById(newHearing._id)
-      .populate("caseId", "title caseNumber clientName");
+    const populatedHearing = await Hearing.findById(hearing._id).populate(
+      "caseId",
+      "caseNumber title clientName"
+    );
+
+    revalidatePath("/cases/[id]", "page");
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(populatedHearing)),
+    };
   } catch (error) {
-    logger.error({ error, data }, "Error creating hearing");
-    throw error;
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : "An error occurred",
+      },
+    };
   }
 }
 
-export async function updateHearing(data: UpdateHearingParams) {
-  try {
-    await dbConnect();
-    logger.info({ data }, "Updating hearing");
-    
-    const { id, ...updateData } = data;
+export async function updateHearing(
+  params: UpdateHearingParams
+): Promise<ActionResponse<Hearing>> {
+  const validationResult = await action({
+    params,
+    schema: UpdateHearingSchema,
+  });
 
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ hearingId: id }, "Invalid hearing ID");
-      throw new Error("Invalid hearing ID");
-    }
-
-    if (updateData.caseId && !Types.ObjectId.isValid(updateData.caseId)) {
-      logger.error({ caseId: updateData.caseId }, "Invalid case ID");
-      throw new Error("Invalid case ID");
-    }
-
-    const updatedHearing = await Hearing.findByIdAndUpdate(
-      id,
-      { ...updateData },
-      { new: true }
-    ).populate("caseId", "title caseNumber clientName");
-
-    if (!updatedHearing) {
-      logger.error({ hearingId: id }, "Hearing not found");
-      throw new Error("Hearing not found");
-    }
-
-    logger.info({ hearingId: id }, "Successfully updated hearing");
-    return updatedHearing;
-  } catch (error) {
-    logger.error({ error, data }, "Error updating hearing");
-    throw error;
+  if (validationResult instanceof Error) {
+    return {
+      success: false,
+      error: { message: validationResult.message },
+    };
   }
-}
 
-export async function deleteHearing(id: string) {
+  const { id, ...updateData } = validationResult.params!;
+
   try {
-    await dbConnect();
-    logger.info({ hearingId: id }, "Deleting hearing");
-    
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ hearingId: id }, "Invalid hearing ID");
-      throw new Error("Invalid hearing ID");
-    }
-
     const hearing = await Hearing.findById(id);
     if (!hearing) {
-      logger.error({ hearingId: id }, "Hearing not found");
-      throw new Error("Hearing not found");
+      return {
+        success: false,
+        error: { message: "Hearing not found" },
+      };
     }
 
+    // If caseNumber is being updated, find the new case
+    if (updateData.caseNumber) {
+      const newCase = await Case.findOne({ caseNumber: updateData.caseNumber });
+      if (!newCase) {
+        return {
+          success: false,
+          error: { message: "New case not found" },
+        };
+      }
+
+      // Remove hearing from old case's hearingIds
+      await Case.findByIdAndUpdate(hearing.caseId, {
+        $pull: { hearingIds: id },
+      });
+
+      // Add hearing to new case's hearingIds
+      await Case.findByIdAndUpdate(newCase._id, {
+        $push: { hearingIds: id },
+      });
+
+      // Create a new update object with caseId instead of caseNumber
+      const updateWithCaseId = {
+        ...updateData,
+        caseId: newCase._id,
+      };
+      delete updateWithCaseId.caseNumber;
+
+      const updatedHearing = await Hearing.findByIdAndUpdate(
+        id,
+        { $set: updateWithCaseId },
+        { new: true }
+      ).populate("caseId", "caseNumber title clientName");
+
+      revalidatePath("/cases/[id]", "page");
+      return {
+        success: true,
+        data: JSON.parse(JSON.stringify(updatedHearing)),
+      };
+    }
+
+    // If no caseNumber update, proceed with normal update
+    const updatedHearing = await Hearing.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    ).populate("caseId", "caseNumber title clientName");
+
+    revalidatePath("/cases/[id]", "page");
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(updatedHearing)),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : "An error occurred",
+      },
+    };
+  }
+}
+
+export async function deleteHearing(
+  params: IdParams
+): Promise<ActionResponse<null>> {
+  const validationResult = await action({
+    params,
+    schema: IdSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return {
+      success: false,
+      error: { message: validationResult.message },
+    };
+  }
+
+  const { id } = validationResult.params!;
+
+  try {
+    const hearing = await Hearing.findById(id);
+    if (!hearing) {
+      return {
+        success: false,
+        error: { message: "Hearing not found" },
+      };
+    }
+
+    // Remove hearing from case's hearingIds
     await Case.findByIdAndUpdate(hearing.caseId, {
-      $pull: { hearingIds: hearing._id },
+      $pull: { hearingIds: id },
     });
 
-    const deletedHearing = await Hearing.findByIdAndDelete(id);
-    logger.info({ hearingId: id }, "Successfully deleted hearing");
-    return deletedHearing;
+    await Hearing.findByIdAndDelete(id);
+    revalidatePath("/cases/[id]", "page");
+    return {
+      success: true,
+      data: null,
+    };
   } catch (error) {
-    logger.error({ error, hearingId: id }, "Error deleting hearing");
-    throw error;
+    return {
+      success: false,
+      error: {
+        message: error instanceof Error ? error.message : "An error occurred",
+      },
+    };
   }
-} 
+}

@@ -1,11 +1,14 @@
 "use server";
 
-import dbConnect from "@/lib/mongoose";
 import Case from "@/database/case.model";
 import { Types, FilterQuery } from "mongoose";
-import logger from "@/lib/logger";
 import Lawyer from "@/database/lawyer.model";
-import { CaseSchema, IdSchema } from "../validations";
+import {
+  CaseSchema,
+  CreateCaseSchema,
+  UpdateCaseSchema,
+  IdSchema,
+} from "../validations";
 import handleError from "../handlers/error";
 import action from "../handlers/action";
 import { NotFoundError } from "../http-errors";
@@ -93,7 +96,7 @@ export async function getCases(
   }
 }
 
-export async function getCaseId(
+export async function getCaseById(
   params: IdParams
 ): Promise<ActionResponse<Case>> {
   const validationResult = await action({
@@ -118,116 +121,156 @@ export async function getCaseId(
   }
 }
 
-// export async function createCase(data: CreateCaseParams) {
-//   try {
-//     await dbConnect();
-//     logger.info({ data }, "Creating new case");
+export async function createCase(
+  params: CreateCaseParams
+): Promise<ActionResponse<Case>> {
+  const validationResult = await action({
+    params,
+    schema: CreateCaseSchema,
+  });
 
-//     const {
-//       caseNumber,
-//       title,
-//       clientName,
-//       lawyerId,
-//       courtId,
-//       status = "pending",
-//     } = data;
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
 
-//     if (!Types.ObjectId.isValid(lawyerId) || !Types.ObjectId.isValid(courtId)) {
-//       logger.error({ lawyerId, courtId }, "Invalid lawyer or court ID");
-//       throw new Error("Invalid lawyer or court ID");
-//     }
+  const {
+    caseNumber,
+    title,
+    clientName,
+    lawyerId,
+    courtId,
+    status = "pending",
+  } = validationResult.params!;
 
-//     const existingCase = await Case.findOne({ caseNumber });
-//     if (existingCase) {
-//       logger.error({ caseNumber }, "Case number already exists");
-//       throw new Error("Case number already exists");
-//     }
-
-//     const newCase = await Case.create({
-//       caseNumber,
-//       title,
-//       clientName,
-//       lawyerId: new Types.ObjectId(lawyerId),
-//       courtId: new Types.ObjectId(courtId),
-//       status,
-//     });
-
-//     // Update lawyer's caseCount
-//     if (lawyerId) {
-//       await Lawyer.findByIdAndUpdate(lawyerId, { $inc: { caseCount: 1 } });
-//       logger.info(
-//         { lawyerId, caseId: newCase._id },
-//         "Updated lawyer's case count"
-//       );
-//     }
-
-//     logger.info({ caseId: newCase._id }, "Successfully created case");
-//     return await Case.findById(newCase._id)
-//       .populate("lawyerId", "name specialization")
-//       .populate("courtId", "name location");
-//   } catch (error) {
-//     logger.error({ error, data }, "Error creating case");
-//     throw error;
-//   }
-// }
-
-export async function updateCase(data: UpdateCaseParams) {
   try {
-    await dbConnect();
-    logger.info({ data }, "Updating case");
-
-    const { id, ...updateData } = data;
-
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ caseId: id }, "Invalid case ID");
-      throw new Error("Invalid case ID");
+    // Check if case number already exists
+    const existingCase = await Case.findOne({ caseNumber });
+    if (existingCase) {
+      return {
+        success: false,
+        error: { message: "Case number already exists" },
+      };
     }
 
+    // Validate lawyer and court IDs
+    if (!Types.ObjectId.isValid(lawyerId) || !Types.ObjectId.isValid(courtId)) {
+      return {
+        success: false,
+        error: { message: "Invalid lawyer or court ID" },
+      };
+    }
+
+    const newCase = await Case.create({
+      caseNumber,
+      title,
+      clientName,
+      lawyerId: new Types.ObjectId(lawyerId),
+      courtId: new Types.ObjectId(courtId),
+      status,
+    });
+
+    // Update lawyer's caseCount
+    await Lawyer.findByIdAndUpdate(lawyerId, { $inc: { caseCount: 1 } });
+
+    const populatedCase = await Case.findById(newCase._id)
+      .populate("lawyerId", "name specialization")
+      .populate("courtId", "name location");
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(populatedCase)),
+    };
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+}
+
+export async function updateCase(
+  params: UpdateCaseParams
+): Promise<ActionResponse<Case>> {
+  const validationResult = await action({
+    params,
+    schema: UpdateCaseSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { id, ...updateData } = validationResult.params!;
+
+  try {
+    // Validate case ID
+    if (!Types.ObjectId.isValid(id)) {
+      return {
+        success: false,
+        error: { message: "Invalid case ID" },
+      };
+    }
+
+    // Validate lawyer and court IDs if they are being updated
     if (updateData.lawyerId && !Types.ObjectId.isValid(updateData.lawyerId)) {
-      logger.error({ lawyerId: updateData.lawyerId }, "Invalid lawyer ID");
-      throw new Error("Invalid lawyer ID");
+      return {
+        success: false,
+        error: { message: "Invalid lawyer ID" },
+      };
     }
 
     if (updateData.courtId && !Types.ObjectId.isValid(updateData.courtId)) {
-      logger.error({ courtId: updateData.courtId }, "Invalid court ID");
-      throw new Error("Invalid court ID");
+      return {
+        success: false,
+        error: { message: "Invalid court ID" },
+      };
     }
 
     const updatedCase = await Case.findByIdAndUpdate(
       id,
       { ...updateData },
-      { new: true }
+      { new: true, runValidators: true }
     )
       .populate("lawyerId", "name specialization")
       .populate("courtId", "name location");
 
     if (!updatedCase) {
-      logger.error({ caseId: id }, "Case not found");
-      throw new Error("Case not found");
+      throw new NotFoundError("Case");
     }
 
-    logger.info({ caseId: id }, "Successfully updated case");
-    return updatedCase;
+    const assignedLawyer = await Lawyer.findById(updatedCase.lawyerId);
+
+    if (assignedLawyer) {
+      assignedLawyer.caseCount = await Case.countDocuments({
+        lawyerId: assignedLawyer._id,
+      });
+      await assignedLawyer.save();
+    }
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(updatedCase)),
+    };
   } catch (error) {
-    logger.error({ error, data }, "Error updating case");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
 }
 
-export async function deleteCase(id: string) {
+export async function deleteCase(
+  params: IdParams
+): Promise<ActionResponse<null>> {
+  const validationResult = await action({
+    params,
+    schema: IdSchema,
+  });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { id } = validationResult.params!;
+
   try {
-    await dbConnect();
-    logger.info({ caseId: id }, "Deleting case");
-
-    if (!Types.ObjectId.isValid(id)) {
-      logger.error({ caseId: id }, "Invalid case ID");
-      throw new Error("Invalid case ID");
-    }
-
     const case_ = await Case.findById(id);
     if (!case_) {
-      logger.error({ caseId: id }, "Case not found");
-      throw new Error("Case not found");
+      return { success: false, error: { message: "Case not found" } };
     }
 
     // Update lawyer's caseCount if case has a lawyer
@@ -235,17 +278,18 @@ export async function deleteCase(id: string) {
       await Lawyer.findByIdAndUpdate(case_.lawyerId, {
         $inc: { caseCount: -1 },
       });
-      logger.info(
-        { lawyerId: case_.lawyerId, caseId: id },
-        "Updated lawyer's case count"
-      );
     }
 
     const deletedCase = await Case.findByIdAndDelete(id);
-    logger.info({ caseId: id }, "Successfully deleted case");
-    return deletedCase;
+    if (!deletedCase) {
+      return { success: false, error: { message: "Failed to delete case" } };
+    }
+
+    return {
+      success: true,
+      data: null,
+    };
   } catch (error) {
-    logger.error({ error, caseId: id }, "Error deleting case");
-    throw error;
+    return handleError(error) as ErrorResponse;
   }
 }

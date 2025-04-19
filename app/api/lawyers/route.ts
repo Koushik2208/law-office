@@ -33,14 +33,14 @@ export async function POST(request: Request) {
       throw new ValidationError(validatedData.error.flatten().fieldErrors);
     }
 
-    const { email, username } = validatedData.data;
+    // const { email, username } = validatedData.data;
 
     // Check if a lawyer with the same email or username already exists
-    const existingLawyer = await Lawyer.findOne({ email });
-    if (existingLawyer) throw new Error("Lawyer already exists");
+    // const existingLawyer = await Lawyer.findOne({ email });
+    // if (existingLawyer) throw new Error("Lawyer already exists");
 
-    const existingLawyername = await Lawyer.findOne({ username });
-    if (existingLawyername) throw new Error("Username already exists");
+    // const existingLawyername = await Lawyer.findOne({ username });
+    // if (existingLawyername) throw new Error("Username already exists");
 
     // Create a new lawyer, caseCount will be managed in the Lawyer model
     const newLawyer = await Lawyer.create(validatedData.data);

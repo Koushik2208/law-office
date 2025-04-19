@@ -1,23 +1,27 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "../table/DataTableColumnHeader"
-import { Button } from "../ui/button"
-import { MoreHorizontal } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import { Checkbox } from "../ui/checkbox"
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "../table/DataTableColumnHeader";
+import { Button } from "../ui/button";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Checkbox } from "../ui/checkbox";
+import Link from "next/link";
 
-export type Court = {
-  _id: string
-  name: string
-  location: string
-  type: string
-  description: string
-  createdAt: string
-  updatedAt: string
+interface CourtColumnsProps {
+  onDeleteClick: (id: string) => void;
 }
 
-export const columns: ColumnDef<Court>[] = [
+export const columns = ({
+  onDeleteClick,
+}: CourtColumnsProps): ColumnDef<Court>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -50,17 +54,6 @@ export const columns: ColumnDef<Court>[] = [
     ),
   },
   {
-    accessorKey: "type",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Type" />
-    ),
-    cell: ({ row }) => (
-      <div className="capitalize font-medium">
-        {row.getValue("type")}
-      </div>
-    ),
-  },
-  {
     accessorKey: "location",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Location" />
@@ -70,20 +63,9 @@ export const columns: ColumnDef<Court>[] = [
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created At" />
-    ),
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {new Date(row.getValue("createdAt")).toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
     id: "actions",
     cell: ({ row }) => {
-      const court = row.original
+      const court = row.original;
 
       return (
         <DropdownMenu>
@@ -96,19 +78,23 @@ export const columns: ColumnDef<Court>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() =>
-                navigator.clipboard.writeText(court._id)
-              }
+              onClick={() => navigator.clipboard.writeText(court._id)}
             >
               Copy Court ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Edit Court</DropdownMenuItem>
-            <DropdownMenuItem>View Cases</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/courts/${court._id}`}>View Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDeleteClick(court._id)}>
+              Delete
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/cases?courtId=${court._id}`}>View Cases</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];

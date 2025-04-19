@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { formatDateLong } from "@/lib/utils";
 import { Suspense } from "react";
+import { CardSkeleton, ListCardSkeleton } from "@/components/skeletons/CardSkeleton";
 
 // Stats Cards Component
 async function StatsCards() {
@@ -166,71 +167,32 @@ async function HearingsByMonth() {
   );
 }
 
-// Loading Skeleton Components
-function StatsCardsSkeleton() {
-  return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-      {[...Array(2)].map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-          </CardHeader>
-          <CardContent>
-            <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-            <div className="h-4 w-32 bg-muted animate-pulse rounded mt-2" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function ListSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="h-6 w-32 bg-muted animate-pulse rounded" />
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between">
-              <div className="space-y-2">
-                <div className="h-4 w-48 bg-muted animate-pulse rounded" />
-                <div className="h-4 w-32 bg-muted animate-pulse rounded" />
-              </div>
-              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 const Home = () => {
   return (
     <div className="p-6 space-y-6">
-      <Suspense fallback={<StatsCardsSkeleton />}>
+      <Suspense fallback={<div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>}>
         <StatsCards />
       </Suspense>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
-        <Suspense fallback={<ListSkeleton />}>
+        <Suspense fallback={<ListCardSkeleton />}>
           <RecentCases />
         </Suspense>
 
-        <Suspense fallback={<ListSkeleton />}>
+        <Suspense fallback={<ListCardSkeleton />}>
           <UpcomingHearings />
         </Suspense>
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <Suspense fallback={<ListSkeleton />}>
+        <Suspense fallback={<ListCardSkeleton />}>
           <CaseStatusDistribution />
         </Suspense>
 
-        <Suspense fallback={<ListSkeleton />}>
+        <Suspense fallback={<ListCardSkeleton />}>
           <HearingsByMonth />
         </Suspense>
       </div>

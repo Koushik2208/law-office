@@ -1,27 +1,28 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "../table/DataTableColumnHeader"
-import { Button } from "../ui/button"
-import { MoreHorizontal } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import { Checkbox } from "../ui/checkbox"
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "../table/DataTableColumnHeader";
+import { Button } from "../ui/button";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Checkbox } from "../ui/checkbox";
+import Link from "next/link";
+import { formatDateLong } from "@/lib/utils";
 
-export type Hearing = {
-  _id: string
-  date: string
-  description: string
-  caseId: {
-    _id: string
-    title: string
-    caseNumber: string
-    clientName: string
-  }
-  createdAt: string
-  updatedAt: string
+interface HearingColumnsProps {
+  onDeleteClick: (id: string) => void;
 }
 
-export const columns: ColumnDef<Hearing>[] = [
+export const columns = ({
+  onDeleteClick,
+}: HearingColumnsProps): ColumnDef<Hearing>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -76,11 +77,10 @@ export const columns: ColumnDef<Hearing>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {new Date(row.getValue("date")).toLocaleDateString()}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const date = row.getValue("date") as string;
+      return <div className="text-sm">{formatDateLong(date)}</div>;
+    },
   },
   {
     accessorKey: "description",
@@ -94,7 +94,7 @@ export const columns: ColumnDef<Hearing>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const hearing = row.original
+      const hearing = row.original;
 
       return (
         <DropdownMenu>
@@ -107,19 +107,23 @@ export const columns: ColumnDef<Hearing>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() =>
-                navigator.clipboard.writeText(hearing._id)
-              }
+              onClick={() => navigator.clipboard.writeText(hearing._id)}
             >
               Copy Hearing ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Edit Hearing</DropdownMenuItem>
-            <DropdownMenuItem>View Case</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/hearings/${hearing._id}`}>View Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDeleteClick(hearing._id)}>
+              Delete
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/cases?hearingId=${hearing._id}`}>View Case</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-] 
+];

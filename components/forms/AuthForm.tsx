@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import ROUTES from "@/constants/routes";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import Link from "next/link";
 import { LawyerSpecialization } from "@/types/enums"; // Import your enum
 import EnumDropdown from "../dropdowns/EnumDropdown";
@@ -54,95 +53,89 @@ const AuthForm = <T extends FieldValues>({ schema, defaultValues, formType, onSu
     };
 
     const buttonText = formType === "SIGN_IN" ? "Sign In" : "Sign Up";
-    const title = formType === "SIGN_IN" ? "Welcome Back" : "Create Account";
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)}>
-                        {Object.keys(defaultValues).map((field) => (
-                            <FormField
-                                key={field}
-                                control={form.control}
-                                name={field as Path<T>}
-                                render={({ field }) => {
-                                    if (field.name === "specialization") {
-                                        return (
-                                            <FormItem>
-                                                <FormLabel>Specialization</FormLabel>
-                                                <FormControl>
-                                                    <EnumDropdown
-                                                        placeholder="Select Specialization"
-                                                        enumType={LawyerSpecialization}
-                                                        onChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        );
-                                    }
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                {Object.keys(defaultValues).map((field) => (
+                    <FormField
+                        key={field}
+                        control={form.control}
+                        name={field as Path<T>}
+                        render={({ field }) => {
+                            if (field.name === "specialization") {
+                                return (
+                                    <FormItem>
+                                        <FormLabel className="text-base font-semibold">Specialization</FormLabel>
+                                        <FormControl>
+                                            <EnumDropdown
+                                                placeholder="Select Specialization"
+                                                enumType={LawyerSpecialization}
+                                                onChange={field.onChange}
+                                                defaultValue={field.value}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }
 
-                                    return (
-                                        <FormItem>
-                                            <FormLabel>
-                                                {field.name === "email"
-                                                    ? "Email Address"
-                                                    : field.name === "password"
-                                                        ? "Password"
-                                                        : field.name.charAt(0).toUpperCase() + field.name.slice(1)}
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    required
-                                                    type={field.name === "password" ? "password" : "text"}
-                                                    placeholder={`Enter your ${field.name}`}
-                                                    className="h-11"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    );
-                                }}
-                            />
-                        ))}
+                            return (
+                                <FormItem>
+                                    <FormLabel className="text-base font-semibold">
+                                        {field.name === "email"
+                                            ? "Email Address"
+                                            : field.name === "password"
+                                                ? "Password"
+                                                : field.name.charAt(0).toUpperCase() + field.name.slice(1)}
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            required
+                                            type={field.name === "password" ? "password" : "text"}
+                                            placeholder={`Enter your ${field.name}`}
+                                            className="h-11"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
+                    />
+                ))}
 
-                        <Button
-                            disabled={form.formState.isSubmitting}
-                        >
-                            {form.formState.isSubmitting
-                                ? buttonText === "Sign In"
-                                    ? "Signing In..."
-                                    : "Signing Up..."
-                                : buttonText}
-                        </Button>
+                <Button
+                    type="submit"
+                    className="w-full h-11"
+                    disabled={form.formState.isSubmitting}
+                >
+                    {form.formState.isSubmitting
+                        ? buttonText === "Sign In"
+                            ? "Signing In..."
+                            : "Signing Up..."
+                        : buttonText}
+                </Button>
 
-                        <div>
-                            {formType === "SIGN_IN" ? (
-                                <p>
-                                    Don&apos;t have an account?{" "}
-                                    <Link href={ROUTES.SIGN_UP} className="text-primary hover:underline">
-                                        Sign up
-                                    </Link>
-                                </p>
-                            ) : (
-                                <p>
-                                    Already have an account?{" "}
-                                    <Link href={ROUTES.SIGN_IN} className="text-primary hover:underline">
-                                        Sign in
-                                    </Link>
-                                </p>
-                            )}
-                        </div>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
+                <div className="text-center text-sm text-muted-foreground">
+                    {formType === "SIGN_IN" ? (
+                        <p>
+                            Don&apos;t have an account?{" "}
+                            <Link href={ROUTES.SIGN_UP} className="text-primary hover:underline">
+                                Sign up
+                            </Link>
+                        </p>
+                    ) : (
+                        <p>
+                            Already have an account?{" "}
+                            <Link href={ROUTES.SIGN_IN} className="text-primary hover:underline">
+                                Sign in
+                            </Link>
+                        </p>
+                    )}
+                </div>
+            </form>
+        </Form>
     );
 };
 

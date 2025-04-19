@@ -13,8 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Checkbox } from "../ui/checkbox";
+import Link from "next/link";
 
-export const columns: ColumnDef<Lawyer>[] = [
+interface LawyerColumnsProps {
+  onDeleteClick: (id: string) => void;
+}
+
+export const columns = ({
+  onDeleteClick,
+}: LawyerColumnsProps): ColumnDef<Lawyer>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -103,9 +110,15 @@ export const columns: ColumnDef<Lawyer>[] = [
               Copy Lawyer ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Edit Lawyer</DropdownMenuItem>
-            <DropdownMenuItem>View Cases</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/lawyers/${lawyer._id}`}>View Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDeleteClick(lawyer._id)}>
+              Delete
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/cases?lawyerId=${lawyer._id}`}>View Cases</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

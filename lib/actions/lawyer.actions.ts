@@ -12,6 +12,7 @@ import {
 import handleError from "../handlers/error";
 import { NotFoundError } from "../http-errors";
 import { Case } from "@/database";
+import { Types } from "mongoose";
 
 export async function getLawyers(
   params: GetLawyersParams
@@ -113,11 +114,23 @@ export async function createLawyer(
     return handleError(validationResult) as ErrorResponse;
   }
 
-  const { name, specialization, role } = validationResult.params!;
+  const { name, email, barNumber, specialization, role } = validationResult.params!;
+
+  const existingLawyer = await Lawyer.findOne({ email });
+  if (existingLawyer) {
+    throw new Error("Lawyer already exists with this email");
+  }
+
+  const existingLawyerByBarNumber = await Lawyer.findOne({ barNumber });
+  if (existingLawyerByBarNumber) {
+    throw new Error("Lawyer already exists with this bar number");
+  }
 
   try {
     const newLawyer = await Lawyer.create({
       name,
+      email,
+      barNumber,
       specialization,
       role,
       caseCount: 0,
@@ -147,10 +160,41 @@ export async function updateLawyer(
   const { id, ...updateData } = validationResult.params!;
 
   try {
-    const updatedLawyer = await Lawyer.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    // Validate lawyer ID
+    if (!Types.ObjectId.isValid(id)) {
+      return {
+        success: false,
+        error: { message: "Invalid lawyer ID" },
+      };
+    }
+
+    // Check if email is being updated and if it already exists
+    if (updateData.email) {
+      const existingLawyer = await Lawyer.findOne({ email: updateData.email, _id: { $ne: id } });
+      if (existingLawyer) {
+        return {
+          success: false,
+          error: { message: "A lawyer with this email already exists" },
+        };
+      }
+    }
+
+    // Check if bar number is being updated and if it already exists
+    if (updateData.barNumber) {
+      const existingLawyer = await Lawyer.findOne({ barNumber: updateData.barNumber, _id: { $ne: id } });
+      if (existingLawyer) {
+        return {
+          success: false,
+          error: { message: "A lawyer with this bar number already exists" },
+        };
+      }
+    }
+
+    const updatedLawyer = await Lawyer.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    );
 
     if (!updatedLawyer) {
       throw new NotFoundError("Lawyer");

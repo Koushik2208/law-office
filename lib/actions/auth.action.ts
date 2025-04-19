@@ -24,7 +24,8 @@ export async function signUpWithCredentials(
     return handleError(validationResult) as ErrorResponse;
   }
 
-  const { name, email, specialization, password, barNumber } = validationResult.params!;
+  const { name, email, specialization, password, barNumber } =
+    validationResult.params!;
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -59,7 +60,13 @@ export async function signUpWithCredentials(
 
     await session.commitTransaction();
 
-    await signIn("credentials", { email, password, redirect: false, role: LawyerRole.Guest, id: newLawyer._id.toString() }); // Include role in signIn
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+      role: LawyerRole.Guest,
+      id: newLawyer._id.toString(),
+    }); // Include role in signIn
 
     return { success: true };
   } catch (error) {
@@ -85,7 +92,7 @@ export async function signInWithCredentials(
     const existingAccount = await Account.findOne({
       provider: "credentials",
       providerAccountId: email,
-    }).populate('userId');
+    }).populate("userId");
 
     if (!existingAccount) throw new NotFoundError("Account");
 
@@ -96,6 +103,7 @@ export async function signInWithCredentials(
 
     if (!passwordMatch) throw new Error("Password does not match");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const lawyer = existingAccount.userId as any;
     if (!lawyer) throw new NotFoundError("Lawyer associated with account");
 

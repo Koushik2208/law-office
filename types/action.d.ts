@@ -1,24 +1,60 @@
+// Case-related types
 interface CreateCaseParams {
   caseNumber: string;
   title: string;
   clientName: string;
-  lawyerId: string;
-  courtId: string;
+  lawyerId: Types.ObjectId;
+  courtId: Types.ObjectId;
+  hearingIds?: Types.ObjectId[];
   status?: "pending" | "disposed" | "unassigned";
 }
 
 interface UpdateCaseParams extends Partial<CreateCaseParams> {
-  id: string;
+  id: Types.ObjectId;
 }
 
+interface GetCasesParams extends PaginatedSearchParams {
+  lawyerId?: Types.ObjectId;
+  courtId?: Types.ObjectId;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+interface GetRecentCasesParams {
+  limit?: number;
+}
+
+// Hearing-related types
 interface CreateHearingParams {
-  caseId: string;
+  caseNumber: string;
   date: string;
-  description: string;
+  description?: string;
 }
 
 interface UpdateHearingParams extends Partial<CreateHearingParams> {
-  id: string;
+  id: Types.ObjectId;
+}
+
+interface GetHearingsParams extends PaginatedSearchParams {
+  caseId?: Types.ObjectId;
+  caseNumber?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+interface GetUpcomingHearingsParams {
+  limit?: number;
+}
+
+interface GetHearingsByMonthParams {
+  year?: number;
+}
+
+// Court-related types
+interface GetCourtsParams extends PaginatedSearchParams {
+  name?: string;
+  location?: string
 }
 
 interface CreateCourtParams {
@@ -27,44 +63,27 @@ interface CreateCourtParams {
 }
 
 interface UpdateCourtParams extends Partial<CreateCourtParams> {
-  id: string;
+  id: Types.ObjectId;
 }
 
+// Lawyer-related types
 interface CreateLawyerParams {
   name: string;
   email: string;
-  password?: string;
   barNumber?: string;
   specialization:
-    | "Criminal Law"
-    | "Civil Law"
-    | "Family Law"
-    | "Corporate Law"
-    | "Immigration Law"
-    | "Real Estate Law"
-    | "Other";
+  | "Criminal Law"
+  | "Civil Law"
+  | "Family Law"
+  | "Corporate Law"
+  | "Immigration Law"
+  | "Real Estate Law"
+  | "Other";
   role: "admin" | "lawyer" | "guest";
 }
 
 interface UpdateLawyerParams extends Partial<CreateLawyerParams> {
-  id: string;
-}
-
-interface GetCasesParams extends PaginatedSearchParams {
-  lawyerId?: string;
-  courtId?: string;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-interface GetHearingsParams extends PaginatedSearchParams {
-  caseId?: string;
-  courtId?: string;
-  lawyerId?: string;
-  status?: "pending" | "disposed" | "unassigned";
-  startDate?: string;
-  endDate?: string;
+  id: Types.ObjectId;
 }
 
 interface GetLawyersParams extends PaginatedSearchParams {
@@ -72,18 +91,19 @@ interface GetLawyersParams extends PaginatedSearchParams {
   role?: string;
 }
 
+// Auth-related types
 interface AuthCredentials {
   name: string;
   email: string;
   password?: string;
   role?: "admin" | "lawyer" | "guest";
   specialization?:
-    | "Criminal Law"
-    | "Civil Law"
-    | "Family Law"
-    | "Corporate Law"
-    | "Immigration Law"
-    | "Other";
+  | "Criminal Law"
+  | "Civil Law"
+  | "Family Law"
+  | "Corporate Law"
+  | "Immigration Law"
+  | "Other";
   barNumber?: string;
 }
 
@@ -98,17 +118,10 @@ interface SignInWithOAuthParams {
   };
 }
 
+// Dashboard/Stats-related types
 interface GetDashboardStatsParams {
   startDate?: string;
   endDate?: string;
-}
-
-interface GetRecentCasesParams {
-  limit?: number;
-}
-
-interface GetUpcomingHearingsParams {
-  limit?: number;
 }
 
 interface GetCaseStatusDistributionParams {
@@ -116,10 +129,7 @@ interface GetCaseStatusDistributionParams {
   endDate?: string;
 }
 
-interface GetHearingsByMonthParams {
-  year?: number;
-}
-
+// Common/Utility types
 interface IdParams {
   id: string;
 }

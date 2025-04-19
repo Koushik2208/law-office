@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formUrlQuery, removeKeysFromUrlQuery } from "@/lib/url";
+import { FilterSkeleton } from "../skeletons/FilterSkeleton";
 
 export default function LawyerFilter() {
   const router = useRouter();
@@ -50,29 +51,32 @@ export default function LawyerFilter() {
   };
 
   if (isLoading) {
-    return (
-      <div className="animate-pulse h-10 bg-gray-200 rounded-md w-full max-w-[240px] max-md:max-w-full"></div>
-    );
+    return <FilterSkeleton />;
   }
 
   return (
     <div className="w-full max-w-[240px] max-md:max-w-full">
-      <Select
-        value={searchParams.get("lawyerId") || "all"}
-        onValueChange={handleLawyerChange}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select lawyer" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Lawyers</SelectItem>
-          {lawyers.map((lawyer) => (
-            <SelectItem key={lawyer._id} value={lawyer._id}>
-              {lawyer.name} ({lawyer.specialization})
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-muted-foreground">
+          Lawyer
+        </label>
+        <Select
+          value={searchParams.get("lawyerId") || "all"}
+          onValueChange={handleLawyerChange}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select lawyer" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Lawyers</SelectItem>
+            {lawyers.map((lawyer) => (
+              <SelectItem key={lawyer._id} value={lawyer._id}>
+                {lawyer.name} ({lawyer.specialization})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }

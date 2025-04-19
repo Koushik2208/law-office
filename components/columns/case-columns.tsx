@@ -13,8 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Checkbox } from "../ui/checkbox";
+import Link from "next/link";
 
-export const columns: ColumnDef<Case>[] = [
+interface CaseColumnsProps {
+  onDeleteClick: (id: string) => void;
+}
+
+export const columns = ({
+  onDeleteClick,
+}: CaseColumnsProps): ColumnDef<Case>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -25,6 +32,7 @@ export const columns: ColumnDef<Case>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
+        className="text-primary bg-white"
       />
     ),
     cell: ({ row }) => (
@@ -32,6 +40,7 @@ export const columns: ColumnDef<Case>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
+        className="text-primary bg-white"
       />
     ),
     enableSorting: false,
@@ -109,26 +118,36 @@ export const columns: ColumnDef<Case>[] = [
     id: "actions",
     cell: ({ row }) => {
       const case_ = row.original;
+      const caseId = case_._id;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0 text-primary bg-white"
+            >
               <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="bg-white">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(case_._id)}
+              onClick={() => navigator.clipboard.writeText(caseId)}
             >
               Copy Case ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Edit Case</DropdownMenuItem>
-            <DropdownMenuItem>View Hearings</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/cases/${caseId}`}>Details</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDeleteClick(caseId)}>
+              Delete
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/hearings?caseId=${caseId}`}>View Hearings</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

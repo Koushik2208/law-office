@@ -20,13 +20,17 @@ export default function Sidebar() {
         <nav className="flex-1">
           <ul className="space-y-2 p-4">
             {sidebarLinks.map((link) => {
-              const isActive = pathname === link.route
+              const isSelected =
+                (link.route !== "/" &&
+                  pathname?.includes(link.route) &&
+                  link.route.length > 0) ||
+                pathname === link.route;
               return (
                 <li key={link.route}>
                   <Link
                     href={link.route}
                     className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                      isActive
+                      isSelected
                         ? 'bg-primary text-white'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
@@ -36,7 +40,7 @@ export default function Sidebar() {
                       alt={link.text}
                       width={24}
                       height={24}
-                      className={isActive ? 'invert' : ''}
+                      className={isSelected ? 'invert' : ''}
                     />
                     <span>{link.text}</span>
                   </Link>
@@ -81,13 +85,17 @@ export default function Sidebar() {
             <nav className="flex-1">
               <ul className="space-y-2 p-4">
                 {sidebarLinks.map((link) => {
-                  const isActive = pathname === link.route
+                  const isSelected =
+                    (link.route !== "/" &&
+                      pathname?.includes(link.route) &&
+                      link.route.length > 0) ||
+                    pathname === link.route;
                   return (
                     <li key={link.route}>
                       <Link
                         href={link.route}
                         className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                          isActive
+                          isSelected
                             ? 'bg-primary text-white'
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
@@ -98,7 +106,7 @@ export default function Sidebar() {
                           alt={link.text}
                           width={24}
                           height={24}
-                          className={isActive ? 'invert' : ''}
+                          className={isSelected ? 'invert' : ''}
                         />
                         <span>{link.text}</span>
                       </Link>

@@ -1,7 +1,28 @@
-import React from "react";
+"use client";
+
+import LawyerForm from "@/components/forms/LawyerForm";
+import { createLawyer } from "@/lib/actions/lawyer.actions";
+import { CreateLawyerSchema } from "@/lib/validations";
+import { LawyerRole, LawyerSpecialization } from "@/types/enums";
 
 const NewLawyer = () => {
-  return <div>New Lawyer</div>;
+
+  return (
+    <div className="container mx-auto py-10">
+      <LawyerForm
+        formType="CREATE"
+        schema={CreateLawyerSchema}
+        defaultValues={{
+          name: "",
+          email: "",
+          specialization: LawyerSpecialization.Other,
+          role: LawyerRole.Guest,
+          barNumber: "",
+        }}
+        onSubmit={createLawyer}
+      />
+    </div>
+  );
 };
 
 export default NewLawyer;
