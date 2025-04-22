@@ -97,6 +97,7 @@ const LawyersPage = () => {
           </Link>
         </Button>
       </div>
+
       <DataTable
         columns={columns({ onDeleteClick: handleDeleteClick })}
         data={lawyers}

@@ -1,21 +1,24 @@
-import { 
-  getDashboardStats, 
-  getRecentCases, 
-  getUpcomingHearings, 
-  getCaseStatusDistribution, 
-  getHearingsByMonth 
+import {
+  getDashboardStats,
+  getRecentCases,
+  getUpcomingHearings,
+  getCaseStatusDistribution,
+  getHearingsByMonth,
 } from "@/lib/actions/dashboard.actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { formatDateLong } from "@/lib/utils";
 import { Suspense } from "react";
-import { CardSkeleton, ListCardSkeleton } from "@/components/skeletons/CardSkeleton";
+import {
+  CardSkeleton,
+  ListCardSkeleton,
+} from "@/components/skeletons/CardSkeleton";
 
 // Stats Cards Component
 async function StatsCards() {
   const stats = await getDashboardStats();
-  
+
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -47,7 +50,7 @@ async function StatsCards() {
 // Recent Cases Component
 async function RecentCases() {
   const cases = await getRecentCases();
-  
+
   return (
     <Card className="col-span-1 md:col-span-2 lg:col-span-4">
       <CardHeader>
@@ -57,7 +60,10 @@ async function RecentCases() {
         <ScrollArea className="h-[300px]">
           <div className="space-y-4">
             {cases.map((caseItem: Case) => (
-              <div key={caseItem._id} className="flex items-center justify-between">
+              <div
+                key={caseItem._id}
+                className="flex items-center justify-between"
+              >
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">
                     {caseItem.title}
@@ -84,7 +90,7 @@ async function RecentCases() {
 // Upcoming Hearings Component
 async function UpcomingHearings() {
   const hearings = await getUpcomingHearings();
-  
+
   return (
     <Card className="col-span-1 md:col-span-2 lg:col-span-3">
       <CardHeader>
@@ -94,7 +100,10 @@ async function UpcomingHearings() {
         <ScrollArea className="h-[300px]">
           <div className="space-y-4">
             {hearings.map((hearing: Hearing) => (
-              <div key={hearing._id} className="flex items-center justify-between">
+              <div
+                key={hearing._id}
+                className="flex items-center justify-between"
+              >
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-none">
                     {hearing.caseId?.title}
@@ -118,7 +127,7 @@ async function UpcomingHearings() {
 // Case Status Distribution Component
 async function CaseStatusDistribution() {
   const statuses = await getCaseStatusDistribution();
-  
+
   return (
     <Card>
       <CardHeader>
@@ -143,7 +152,7 @@ async function CaseStatusDistribution() {
 // Hearings by Month Component
 async function HearingsByMonth() {
   const monthlyData = await getHearingsByMonth();
-  
+
   return (
     <Card>
       <CardHeader>
@@ -155,7 +164,9 @@ async function HearingsByMonth() {
             <div key={month._id} className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-sm font-medium">
-                  {new Date(2000, month._id - 1).toLocaleString('default', { month: 'long' })}
+                  {new Date(2000, month._id - 1).toLocaleString("default", {
+                    month: "long",
+                  })}
                 </p>
               </div>
               <p className="text-sm font-medium">{month.count}</p>
@@ -169,11 +180,15 @@ async function HearingsByMonth() {
 
 const Home = () => {
   return (
-    <div className="p-6 space-y-6">
-      <Suspense fallback={<div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-        <CardSkeleton />
-        <CardSkeleton />
-      </div>}>
+    <div className="space-y-6">
+      <Suspense
+        fallback={
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            <CardSkeleton />
+            <CardSkeleton />
+          </div>
+        }
+      >
         <StatsCards />
       </Suspense>
 

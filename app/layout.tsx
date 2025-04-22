@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 
 const poppins = localFont({
-  src: './fonts/Poppins-Regular.ttf',
+  src: "./fonts/Poppins-Regular.ttf",
   variable: "--font-poppins",
   weight: "400",
 });
@@ -19,16 +19,18 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <SessionProvider>
-        <body className={`${poppins.variable} ${poppins.className} antialiased bg-gray-50/50`}>
+        <body
+          className={`${poppins.variable} ${poppins.className} antialiased bg-gray-50/50 overflow-hidden`}
+        >
           {children}
           <Toaster />
         </body>
       </SessionProvider>
     </html>
-  )
+  );
 }

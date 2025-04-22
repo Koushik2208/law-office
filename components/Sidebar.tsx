@@ -1,123 +1,68 @@
-'use client'
-
-import { sidebarLinks } from '@/constants'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import { useState } from 'react'
+import NavLinks from "./NavLinks";
+import { Button } from "./ui/button";
+import { signOut } from "@/auth";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
+import Image from "next/image";
 
 export default function Sidebar() {
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 min-h-screen bg-white border-r">
+      <aside className="hidden flex-shrink-0 md:flex flex-col w-64 h-screen bg-white border-r">
         <div className="p-4">
           <h1 className="text-xl font-bold">Law Office</h1>
         </div>
-        <nav className="flex-1">
-          <ul className="space-y-2 p-4">
-            {sidebarLinks.map((link) => {
-              const isSelected =
-                (link.route !== "/" &&
-                  pathname?.includes(link.route) &&
-                  link.route.length > 0) ||
-                pathname === link.route;
-              return (
-                <li key={link.route}>
-                  <Link
-                    href={link.route}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                      isSelected
-                        ? 'bg-primary text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Image
-                      src={link.img}
-                      alt={link.text}
-                      width={24}
-                      height={24}
-                      className={isSelected ? 'invert' : ''}
-                    />
-                    <span>{link.text}</span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
+        <NavLinks />
+        <div className="p-4 mt-auto border-t border-sidebar-border">
+          <form
+            action={async () => {
+              "use server";
+              await signOut();
+            }}
+          >
+            <Button
+              className="w-full bg-primary text-white dark:bg-secondary hover:bg-primary/90 dark:hover:bg-secondary/90"
+              type="submit"
+            >
+              Sign Out
+            </Button>
+          </form>
+        </div>
       </aside>
 
-      {/* Mobile Menu Button */}
-      <button
-        className="md:hidden fixed top-4 right-4 p-2 rounded-lg bg-white shadow-md"
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      >
-        <Image
-          src="/icons/menu.svg"
-          alt="Menu"
-          width={24}
-          height={24}
-        />
-      </button>
-
-      {/* Mobile Sidebar */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-50">
-          <aside className="fixed inset-y-0 left-0 w-64 bg-white">
-            <div className="p-4 flex justify-between items-center">
-              <h1 className="text-xl font-bold">Law Office</h1>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-lg hover:bg-gray-100"
-              >
-                <Image
-                  src="/icons/close.svg"
-                  alt="Close"
-                  width={24}
-                  height={24}
-                />
-              </button>
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <Sheet>
+          <SheetTrigger className="md:hidden p-2 rounded-lg bg-white shadow-md">
+            <Image src="/icons/menu.svg" alt="Menu" width={24} height={24} />
+          </SheetTrigger>
+          <SheetContent
+            aria-describedby="navigation"
+            side="left"
+            className="flex flex-col p-0 w-64 max-h-screen"
+          >
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold">Navigation</h2>
             </div>
-            <nav className="flex-1">
-              <ul className="space-y-2 p-4">
-                {sidebarLinks.map((link) => {
-                  const isSelected =
-                    (link.route !== "/" &&
-                      pathname?.includes(link.route) &&
-                      link.route.length > 0) ||
-                    pathname === link.route;
-                  return (
-                    <li key={link.route}>
-                      <Link
-                        href={link.route}
-                        className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                          isSelected
-                            ? 'bg-primary text-white'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        <Image
-                          src={link.img}
-                          alt={link.text}
-                          width={24}
-                          height={24}
-                          className={isSelected ? 'invert' : ''}
-                        />
-                        <span>{link.text}</span>
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-            </nav>
-          </aside>
-        </div>
-      )}
+            <NavLinks />
+            <div className="p-4 mt-auto border-t border-sidebar-border">
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut();
+                }}
+              >
+                <Button
+                  className="w-full bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground"
+                  type="submit"
+                >
+                  Sign Out
+                </Button>
+              </form>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
     </>
-  )
-} 
+  );
+}
