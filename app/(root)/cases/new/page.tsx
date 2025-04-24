@@ -7,7 +7,7 @@ import { CaseStatus } from "@/types/enums";
 
 const NewCase = () => {
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <CaseForm
         formType="CREATE"
         schema={CreateCaseSchema}

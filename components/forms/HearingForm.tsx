@@ -95,13 +95,13 @@ const HearingForm = <T extends FieldValues>({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-2xl font-bold">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
+            className="space-y-6"
           >
             {Object.keys(defaultValues)
               .filter((field) => formType === "CREATE" || field !== "id")
@@ -114,7 +114,7 @@ const HearingForm = <T extends FieldValues>({
                     if (field.name === "caseId") {
                       return (
                         <FormItem>
-                          <FormLabel>Case</FormLabel>
+                          <FormLabel className="text-base font-semibold">Case</FormLabel>
                           <FormControl>
                             <SelectDropdown
                               placeholder="Select Case"
@@ -135,7 +135,7 @@ const HearingForm = <T extends FieldValues>({
                     if (field.name === "date") {
                       return (
                         <FormItem>
-                          <FormLabel>Date</FormLabel>
+                          <FormLabel className="text-base font-semibold">Date</FormLabel>
                           <FormControl>
                             <Input
                               required
@@ -153,7 +153,7 @@ const HearingForm = <T extends FieldValues>({
                     if (field.name === "description") {
                       return (
                         <FormItem>
-                          <FormLabel>Description</FormLabel>
+                          <FormLabel className="text-base font-semibold">Description</FormLabel>
                           <FormControl>
                             <Textarea
                               placeholder="Enter hearing description"
@@ -168,7 +168,7 @@ const HearingForm = <T extends FieldValues>({
 
                     return (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel className="text-base font-semibold">
                           {field.name === "description"
                             ? "Description"
                             : field.name.charAt(0).toUpperCase() +

@@ -18,7 +18,7 @@ const RootLayout = async ({ children }: { children: ReactNode }) => {
     >
       <div className="flex min-h-screen w-full overflow-hidden">
         <Sidebar />
-        <main className="flex-1 p-4 max-h-screen overflow-y-auto bg-white">
+        <main className="flex-1 p-6 max-h-screen overflow-y-auto bg-white">
           <div className="fixed top-4 right-4 hidden">
             <ModeToggle />
           </div>

@@ -39,7 +39,7 @@ const LawyerUpdatePage = () => {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <LawyerForm
         formType="UPDATE"
         schema={UpdateLawyerSchema}

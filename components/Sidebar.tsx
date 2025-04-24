@@ -13,7 +13,7 @@ export default function Sidebar() {
           <h1 className="text-xl font-bold">Law Office</h1>
         </div>
         <NavLinks />
-        <div className="p-4 mt-auto border-t border-sidebar-border">
+        <div className="p-4 mt-auto border-t border-slate-200">
           <form
             action={async () => {
               "use server";
@@ -21,7 +21,7 @@ export default function Sidebar() {
             }}
           >
             <Button
-              className="w-full bg-primary text-white dark:bg-secondary hover:bg-primary/90 dark:hover:bg-secondary/90"
+              className="w-full cursor-pointer bg-white text-black dark:bg-secondary hover:bg-primary dark:hover:bg-secondary hover:text-white"
               type="submit"
             >
               Sign Out
@@ -40,9 +40,9 @@ export default function Sidebar() {
             side="left"
             className="flex flex-col p-0 w-64 max-h-screen"
           >
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <SheetTitle className="sr-only">Law Office</SheetTitle>
             <div className="p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold">Navigation</h2>
+              <h2 className="text-lg font-semibold">Law Office</h2>
             </div>
             <NavLinks />
             <div className="p-4 mt-auto border-t border-sidebar-border">
@@ -53,7 +53,7 @@ export default function Sidebar() {
                 }}
               >
                 <Button
-                  className="w-full bg-sidebar-accent hover:bg-sidebar-accent/90 text-sidebar-accent-foreground"
+                  className="w-full bg-white text-black hover:bg-primary hover:text-white"
                   type="submit"
                 >
                   Sign Out

@@ -40,7 +40,7 @@ export async function signUpWithCredentials(
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const [newLawyer] = await Lawyer.create(
-      [{ name, specialization, barNumber, role: LawyerRole.Guest }], // Set default role to Guest
+      [{ name, email, specialization, barNumber, role: LawyerRole.Guest }], // Set default role to Guest
       {
         session,
       }
@@ -64,8 +64,8 @@ export async function signUpWithCredentials(
       email,
       password,
       redirect: false,
-      role: LawyerRole.Guest,
-      id: newLawyer._id.toString(),
+      // role: LawyerRole.Guest,
+      // id: newLawyer._id.toString(),
     }); // Include role in signIn
 
     return { success: true };

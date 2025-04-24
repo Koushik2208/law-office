@@ -61,11 +61,11 @@ const CourtForm = <T extends FieldValues>({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-2xl font-bold">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {Object.keys(defaultValues)
               .filter(field => formType === "CREATE" || field !== "id")
               .map((field) => (
@@ -75,7 +75,7 @@ const CourtForm = <T extends FieldValues>({
                 name={field as Path<T>}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
+                    <FormLabel className="text-base font-semibold">
                       {field.name.charAt(0).toUpperCase() + field.name.slice(1)}
                     </FormLabel>
                     <FormControl>

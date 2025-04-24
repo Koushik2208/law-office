@@ -6,7 +6,7 @@ import { CreateCourtSchema } from "@/lib/validations";
 
 const NewCourt = () => {
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <CourtForm
         formType="CREATE"
         schema={CreateCourtSchema}

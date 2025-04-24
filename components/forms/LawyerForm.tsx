@@ -65,11 +65,11 @@ const LawyerForm = <T extends FieldValues>({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-2xl font-bold">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {Object.keys(defaultValues)
               .filter(field => formType === "CREATE" || field !== "id")
               .map((field) => (
@@ -81,7 +81,7 @@ const LawyerForm = <T extends FieldValues>({
                   if (field.name === "specialization") {
                     return (
                       <FormItem>
-                        <FormLabel>Specialization</FormLabel>
+                        <FormLabel className="text-base font-semibold">Specialization</FormLabel>
                         <FormControl>
                           <EnumDropdown
                             placeholder="Select Specialization"
@@ -98,7 +98,7 @@ const LawyerForm = <T extends FieldValues>({
                   if (field.name === "role") {
                     return (
                       <FormItem>
-                        <FormLabel>Role</FormLabel>
+                        <FormLabel className="text-base font-semibold">Role</FormLabel>
                         <FormControl>
                           <EnumDropdown
                             placeholder="Select Role"
@@ -114,7 +114,7 @@ const LawyerForm = <T extends FieldValues>({
 
                   return (
                     <FormItem>
-                      <FormLabel>
+                      <FormLabel className="text-base font-semibold">
                         {field.name === "email"
                           ? "Email Address"
                           : field.name === "barNumber"

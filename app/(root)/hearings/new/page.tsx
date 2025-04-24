@@ -6,7 +6,7 @@ import { CreateHearingSchema } from "@/lib/validations";
 
 const NewHearing = () => {
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <HearingForm
         formType="CREATE"
         schema={CreateHearingSchema}

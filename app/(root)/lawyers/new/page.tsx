@@ -8,7 +8,7 @@ import { LawyerRole, LawyerSpecialization } from "@/types/enums";
 const NewLawyer = () => {
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <LawyerForm
         formType="CREATE"
         schema={CreateLawyerSchema}

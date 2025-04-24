@@ -106,13 +106,13 @@ const CaseForm = <T extends FieldValues>({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-2xl font-bold">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
+            className="space-y-6"
           >
             {Object.keys(defaultValues)
               .filter((field) => formType === "CREATE" || field !== "id")
@@ -125,7 +125,7 @@ const CaseForm = <T extends FieldValues>({
                     if (field.name === "status") {
                       return (
                         <FormItem>
-                          <FormLabel>Status</FormLabel>
+                          <FormLabel className="text-base font-semibold">Status</FormLabel>
                           <FormControl>
                             <EnumDropdown
                               placeholder="Select Status"
@@ -142,7 +142,7 @@ const CaseForm = <T extends FieldValues>({
                     if (field.name === "lawyerId") {
                       return (
                         <FormItem>
-                          <FormLabel>Lawyer</FormLabel>
+                          <FormLabel className="text-base font-semibold">Lawyer</FormLabel>
                           <FormControl>
                             <SelectDropdown
                               placeholder="Select Lawyer"
@@ -163,7 +163,7 @@ const CaseForm = <T extends FieldValues>({
                     if (field.name === "courtId") {
                       return (
                         <FormItem>
-                          <FormLabel>Court</FormLabel>
+                          <FormLabel className="text-base font-semibold">Court</FormLabel>
                           <FormControl>
                             <SelectDropdown
                               placeholder="Select Court"
@@ -183,7 +183,7 @@ const CaseForm = <T extends FieldValues>({
 
                     return (
                       <FormItem>
-                        <FormLabel>
+                        <FormLabel className="text-base font-semibold" >
                           {field.name === "caseNumber"
                             ? "Case Number"
                             : field.name === "clientName"
