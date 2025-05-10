@@ -36,14 +36,18 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       <DataTableViewOptions table={table} />
+
       <div className="overflow-hidden">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky-header">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="text-primary bg-white"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
